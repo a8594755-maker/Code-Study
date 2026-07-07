@@ -1,3 +1,4 @@
+-- 課程終點示範：第 7 章會逐句拆解這 3 條查詢。現在看不懂是正常的 — 這是你 8 週後的樣子。
 -- Olist business analysis starter queries.
 -- Goal: practice analyst SQL with ecommerce business questions.
 

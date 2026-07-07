@@ -1,13 +1,17 @@
--- Import Olist CSV files with psql.
--- Run this from the repo root after connecting to Supabase with psql.
+-- ============================================================================
+-- ⚠️ 一次性匯入腳本 — 2026-06-13 已執行完成，勿重跑（重跑會把資料灌成兩倍）。
 --
--- Required local folder:
--- 03_data/raw/olist/
+-- ⚠️ \copy 是 psql 專用指令 — 用 VS Code 擴充（Cmd+Shift+E）執行會失敗。
+-- ⚠️ 必須從 repo 根目錄啟動 psql，因為下方的 CSV 路徑是相對路徑
+--    03_data/raw/olist/...（從別的目錄啟動會找不到檔案）。
 --
--- This file uses psql's client-side \copy command. It reads CSV files from
--- your Mac and inserts rows into Supabase tables.
+-- 執行方式（僅重建資料庫時；完整流程見本資料夾 README.md）：
+--   1. 在 repo 根目錄啟動 psql 連上 Supabase（密碼只在提示時輸入）。
+--   2. 執行 \i 01_sql/setup_one_time/2_import_csv_psql_only.sql
 --
--- Keep each \copy command on one line. psql meta-commands are line-based.
+-- 原理：\copy 在你的 Mac 端讀 CSV，再把列送進 Supabase 的表。
+-- 每條 \copy 必須寫在同一行 — psql 的元指令（meta-command）以「行」為單位。
+-- ============================================================================
 
 \copy olist.customers_raw (customer_id, customer_unique_id, customer_zip_code_prefix, customer_city, customer_state) FROM '03_data/raw/olist/olist_customers_dataset.csv' WITH (FORMAT csv, HEADER true, NULL '', QUOTE '"', ESCAPE '"');
 

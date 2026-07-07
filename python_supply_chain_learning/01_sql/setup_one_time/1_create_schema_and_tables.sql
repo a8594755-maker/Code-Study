@@ -1,34 +1,18 @@
--- Olist Setup Lesson: Create Schema and Raw Tables
+-- ============================================================================
+-- ⚠️ 一次性建表腳本 — 2026-06-13 已執行完成，勿重跑。
+-- 只有在明確決定「重建資料庫」時才需要（流程見本資料夾 README.md）。
 --
--- Situation:
--- You are preparing a PostgreSQL database for analyst practice. Before CSV
--- files can be imported, the database needs empty tables with the correct
--- column names and data types.
+-- 這個檔案做什麼：
+-- 建立 schema（資料庫資料夾）olist、9 張空的 _raw 表、以及常用 join 欄位的
+-- 索引。執行順序 = 檔名編號：1 建表 → 2 匯入 → 3 驗證。
 --
--- Important:
--- This is a setup/admin SQL file, not your normal daily analysis file.
--- The Olist tables have already been created and imported in Supabase. You do
--- not need to run this again unless you are rebuilding the database.
+-- 每張表的商業意義（是誰、為什麼重要、重要欄位）已抽出成隨查文件：
+--   → 01_sql/reference/data_dictionary.md
+-- 下方保留的英文逐表註解是 DDL（建表語句）的原始說明，供對照參考。
 --
--- Why this file still matters:
--- Analysts often receive tables that already exist, but they still need to
--- understand how those tables are structured. This file teaches:
---
--- - what a schema is
--- - what a raw table is
--- - why column data types matter
--- - why ID columns are used for joins later
--- - why indexes help common analyst queries run faster
---
--- How to use this file:
--- 1. Read each section first.
--- 2. Do not run the whole file unless you are intentionally rebuilding setup.
--- 3. For practice, use the "Student Practice Area" at the bottom.
--- 4. In daily analysis, start from 03_first_select_practice.sql instead.
---
--- Safety rule:
--- This file uses IF NOT EXISTS. That means PostgreSQL will create the object
--- only if it is missing. It should not delete existing Olist data.
+-- 安全性：全檔使用 IF NOT EXISTS — 物件已存在就跳過，不會刪除既有資料。
+-- 但仍屬 setup 腳本，不在日常課程的 read-only（唯讀）規則之內，勿隨手執行。
+-- ============================================================================
 
 -- ============================================================================
 -- Section 1: Create the schema
@@ -366,66 +350,4 @@ SELECT
 FROM pg_indexes
 WHERE schemaname = 'olist'
 ORDER BY tablename, indexname;
-
--- ============================================================================
--- Student Practice Area
--- ============================================================================
---
--- Rule:
--- Use SELECT only in this practice area. Do not use UPDATE, DELETE, DROP, or
--- TRUNCATE.
---
--- Practice 1:
--- Business question:
--- Which columns exist in olist.customers_raw?
---
--- Why:
--- Before joining orders to customers, analysts inspect the customer table.
---
--- Write your query below:
-
-
-
--- Practice 2:
--- Business question:
--- Which columns exist in olist.order_items_raw?
---
--- Why:
--- Before sales analysis, analysts inspect the item-level table because it
--- contains price, freight, product_id, and seller_id.
---
--- Write your query below:
-
-
-
--- Practice 3:
--- Business question:
--- How many rows are currently in olist.orders_raw?
---
--- Why:
--- After table creation and import, analysts confirm the table is not empty.
---
--- Write your query below:
-
-
-
--- Practice 4:
--- Business question:
--- How many rows are currently in olist.order_items_raw?
---
--- Why:
--- Analysts compare orders_raw and order_items_raw to understand the difference
--- between order-level data and item-level data.
---
--- Write your query below:
-
-
-
--- Practice 5:
--- Explain in your own notes:
---
--- 1. Why does this file create empty tables before CSV import?
--- 2. Why is olist.orders_raw the main starting table?
--- 3. Why can olist.order_items_raw have more rows than olist.orders_raw?
--- 4. Why do analysts inspect columns before writing business queries?
 

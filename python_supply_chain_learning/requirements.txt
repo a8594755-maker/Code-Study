@@ -1,4 +1,9 @@
+# Python 套件清單（本 repo 需要的所有 Python 套件都列在這裡）
+# 第一次安裝、或換新電腦時，在 repo 根目錄執行這一行：
+#   pip install -r requirements.txt
 pandas
 matplotlib
 openpyxl
 jupyter
+# Python 連 PostgreSQL 章節開始時再啟用（把下一行開頭的 # 拿掉，再重跑上面的安裝指令）
+# psycopg2-binary

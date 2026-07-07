@@ -1,3 +1,4 @@
+-- 【歷史保存】你在 2026-06~07 完成的第一堂 SQL 課（原 03_student_first_select_workbench_zh_first_time.sql）。此檔同時是全課程的風格範本。
 -- 第一次 SQL 練習：Olist SELECT 基礎中文版
 --
 -- 這份是第一次用的中文版輔助練習檔。
