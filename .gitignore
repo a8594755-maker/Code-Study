@@ -1,0 +1,17 @@
+# macOS system files
+.DS_Store
+
+# Python virtual environment
+.venv/
+
+# Local backup archives (keep on this machine only)
+*.tar.gz
+
+# Large raw datasets — re-download: Kaggle "Brazilian E-Commerce Public Dataset by Olist"
+python_supply_chain_learning/03_data/raw/olist/*.csv
+
+# Private personal documents — this repo is PUBLIC, never publish these
+python_supply_chain_learning/04_reference/
+
+# Supabase CLI local cache (contains project identifiers)
+python_supply_chain_learning/supabase/
