@@ -14,8 +14,11 @@ venv/
 03_data/processed/
 03_data/output/
 
-# Large local practice datasets
+# Large local practice datasets (Kaggle: Brazilian E-Commerce Public Dataset by Olist)
 03_data/raw/olist/*.csv
 
-# Supabase local CLI cache
-supabase/.temp/
+# Private personal documents — this repo is PUBLIC, never publish
+04_reference/
+
+# Supabase local CLI cache (contains project identifiers)
+supabase/
