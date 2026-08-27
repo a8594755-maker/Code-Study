@@ -1,0 +1,23 @@
+[build]
+  base = "python_supply_chain_learning/tools/sql_playground"
+  command = "npm ci && npm run build"
+  publish = "python_supply_chain_learning/tools/sql_playground/dist"
+  functions = "python_supply_chain_learning/tools/sql_playground/netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "24.11.1"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["express"]
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

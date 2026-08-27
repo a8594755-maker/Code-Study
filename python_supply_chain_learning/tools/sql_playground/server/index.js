@@ -1,5 +1,4 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import express from "express";
 import { rateLimit } from "express-rate-limit";
@@ -16,12 +15,16 @@ import { sendLearningExport } from "./exporter.js";
 import { QueryPolicyError, validateReadOnlySql } from "./query-policy.js";
 import { createSupabaseRest, SupabaseHttpError } from "./supabase-rest.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const appRoot = path.resolve(__dirname, "..");
+const appRoot = path.resolve(process.cwd());
 dotenv.config({ path: path.join(appRoot, ".env"), quiet: true });
 
 const port = Number.parseInt(process.env.PORT ?? "3001", 10);
 const host = process.env.RENDER ? "0.0.0.0" : "127.0.0.1";
+const isServerless = Boolean(
+  process.env.NETLIFY ||
+    process.env.AWS_LAMBDA_FUNCTION_NAME ||
+    process.env.LAMBDA_TASK_ROOT,
+);
 const schema = process.env.DATABASE_SCHEMA?.trim() || "olist";
 const supabaseUrl = process.env.SUPABASE_URL?.trim();
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY?.trim();
@@ -36,7 +39,7 @@ const supabase = configured
 
 const app = express();
 app.disable("x-powered-by");
-if (process.env.RENDER) app.set("trust proxy", 1);
+if (process.env.RENDER || isServerless) app.set("trust proxy", 1);
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -51,6 +54,7 @@ app.use(express.json({ limit: "96kb" }));
 const queryLimiter = rateLimit({
   windowMs: 60_000,
   limit: 30,
+  keyGenerator: (request) => request.user?.id || "anonymous",
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: {
@@ -426,7 +430,7 @@ app.post("/api/events", requireUser, async (request, response) => {
   response.status(204).end();
 });
 
-app.post("/api/query", queryLimiter, requireUser, async (request, response) => {
+app.post("/api/query", requireUser, queryLimiter, async (request, response) => {
   const question = getQuestion(request.body?.questionId);
   if (!question) {
     return response.status(404).json({ error: "找不到這個題目。", code: "QUESTION_NOT_FOUND" });
@@ -676,7 +680,7 @@ app.get("/api/export", requireUser, async (request, response) => {
   }
 });
 
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === "production" && !isServerless) {
   const distPath = path.join(appRoot, "dist");
   app.use(express.static(distPath));
   app.get(/.*/, (_request, response) => {
@@ -684,13 +688,17 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-const server = app.listen(port, host, () => {
-  console.log(`Supply SQL Lab ready at http://${host}:${port}`);
-});
+export { app };
 
-function shutdown() {
-  server.close();
+if (!isServerless) {
+  const server = app.listen(port, host, () => {
+    console.log(`Supply SQL Lab ready at http://${host}:${port}`);
+  });
+
+  function shutdown() {
+    server.close();
+  }
+
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
 }
-
-process.on("SIGINT", shutdown);
-process.on("SIGTERM", shutdown);

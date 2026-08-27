@@ -15,3 +15,6 @@ python_supply_chain_learning/04_reference/
 
 # Supabase CLI local cache (contains project identifiers)
 python_supply_chain_learning/supabase/
+
+# Local Netlify folder
+.netlify

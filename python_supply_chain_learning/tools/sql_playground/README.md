@@ -95,7 +95,12 @@ queries/*.sql
 
 密碼、access token 與 API key 永遠不寫入 Query Log 或下載檔。
 
-## 部署
+## Netlify 部署
 
-repo 根目錄的 `render.yaml` 已設定 Node Web Service、build、start、health check 與 runtime 環境變數。
-部署平台只保存 Supabase client configuration；`.env` 永遠被 Git 忽略。
+正式站：https://supply-sql-lab-a8594755.netlify.app
+
+repo 根目錄的 `netlify.toml` 會建置 Vite 前端，並透過 Netlify Function 提供既有 Express API。
+`/api/*` 會 rewrite 到 Function，其餘路徑回到 SPA 的 `index.html`。
+
+Supabase 設定使用 Netlify 的站點環境變數；不放在 `netlify.toml` 或 Git。變數更新後必須重新部署，
+Function 才會取得新值。
