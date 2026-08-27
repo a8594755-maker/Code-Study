@@ -12,6 +12,7 @@ import {
 } from "./course-catalog.js";
 import { evaluateResult } from "./evaluator.js";
 import { sendLearningExport } from "./exporter.js";
+import { classifyQuestionMastery } from "./mastery.js";
 import { QueryPolicyError, validateReadOnlySql } from "./query-policy.js";
 import { createSupabaseRest, SupabaseHttpError } from "./supabase-rest.js";
 
@@ -225,6 +226,9 @@ function buildCourse(progressRows) {
         attempts: progress?.attempts || 0,
         bestScore: progress?.best_score || 0,
         highestHintLevel: progress?.highest_hint_level || 0,
+        mastery: classifyQuestionMastery(progress),
+        solutionAvailable: item.chapterId === "ch01" && Boolean(item.solution) && Boolean(progress?.attempts),
+        solutionRevealed: (progress?.highest_hint_level || 0) >= 5,
         reflection: progress?.reflection || null,
       };
     });
@@ -304,6 +308,10 @@ async function completeQueryLog(request, logId, values) {
 }
 
 async function upsertProgress(request, question, previous, values) {
+  const completionHintLevel = previous?.last_validation?.completion_hint_level;
+  const lastValidation = completionHintLevel === undefined
+    ? values.validation || {}
+    : { ...(values.validation || {}), completion_hint_level: completionHintLevel };
   const rows = await supabase.upsert(
     "sql_playground_lesson_progress",
     {
@@ -319,7 +327,7 @@ async function upsertProgress(request, question, previous, values) {
         values.hintLevel || 0,
       ),
       last_sql: values.sql,
-      last_validation: values.validation || {},
+      last_validation: lastValidation,
       ...(values.queryPassedAt ? { query_passed_at: values.queryPassedAt } : {}),
       updated_at: new Date().toISOString(),
     },
@@ -426,8 +434,72 @@ app.post("/api/events", requireUser, async (request, response) => {
   if (!allowed.has(eventType) || !question) {
     return response.status(400).json({ error: "無效的學習事件。", code: "INVALID_EVENT" });
   }
+  if (eventType === "hint_revealed") {
+    const hintLevel = Math.min(
+      Math.max(numeric(request.body?.payload?.hintLevel), 0),
+      question.hints.length,
+    );
+    const progress = await getProgressRow(request.accessToken, request.user.id, question.id);
+    if (progress && hintLevel > progress.highest_hint_level) {
+      await supabase.update(
+        "sql_playground_lesson_progress",
+        `user_id=eq.${encodeURIComponent(request.user.id)}&question_id=eq.${encodeURIComponent(question.id)}`,
+        { highest_hint_level: hintLevel, updated_at: new Date().toISOString() },
+        request.accessToken,
+      );
+    }
+  }
   await recordEvent(request, eventType, question, request.body?.payload || {});
   response.status(204).end();
+});
+
+app.post("/api/solution", requireUser, async (request, response) => {
+  const question = getQuestion(request.body?.questionId);
+  if (!question || question.chapterId !== "ch01" || !question.solution) {
+    return response.status(404).json({
+      error: "目前只開放 Chapter 1 的完整教學解答。",
+      code: "SOLUTION_NOT_AVAILABLE",
+    });
+  }
+
+  const progress = await getProgressRow(request.accessToken, request.user.id, question.id);
+  if (!progress?.attempts) {
+    return response.status(409).json({
+      error: "請先在編輯器完成一次真實嘗試並按 Run，再查看完整解答。",
+      code: "ATTEMPT_REQUIRED",
+    });
+  }
+  if (progress.highest_hint_level < question.hints.length) {
+    return response.status(409).json({
+      error: "請先依序查看前四階提示；如果仍然卡住，再開啟完整解答。",
+      code: "HINT_LADDER_REQUIRED",
+    });
+  }
+
+  await supabase.update(
+    "sql_playground_lesson_progress",
+    `user_id=eq.${encodeURIComponent(request.user.id)}&question_id=eq.${encodeURIComponent(question.id)}`,
+    {
+      highest_hint_level: Math.max(progress.highest_hint_level || 0, 5),
+      updated_at: new Date().toISOString(),
+    },
+    request.accessToken,
+  );
+  await recordEvent(request, "hint_revealed", question, {
+    hintLevel: 5,
+    kind: "full_solution",
+    attemptNumber: progress.attempts,
+    previousHintLevel: progress.highest_hint_level || 0,
+  });
+
+  const sql = question.referenceSql.trim().endsWith(";")
+    ? question.referenceSql.trim()
+    : `${question.referenceSql.trim()};`;
+  return response.json({
+    sql,
+    ...question.solution,
+    masteryImpact: "guided",
+  });
 });
 
 app.post("/api/query", requireUser, queryLimiter, async (request, response) => {
@@ -451,7 +523,11 @@ app.post("/api/query", requireUser, queryLimiter, async (request, response) => {
 
   const previous = progressRows.find((row) => row.question_id === question.id) || null;
   const attemptNumber = (previous?.attempts || 0) + 1;
-  const hintLevel = Math.min(Math.max(numeric(request.body?.hintLevel), 0), 3);
+  const maxHintLevel = question.solution ? 5 : question.hints.length;
+  const hintLevel = Math.min(
+    Math.max(numeric(request.body?.hintLevel), 0),
+    maxHintLevel,
+  );
   const rawSql = typeof request.body?.sql === "string" ? request.body.sql : "";
   let logId;
 
@@ -611,12 +687,19 @@ app.post("/api/reflection", requireUser, async (request, response) => {
   }
 
   const completedAt = new Date().toISOString();
+  const completionHintLevel = progress.last_validation?.completion_hint_level
+    ?? progress.highest_hint_level
+    ?? 0;
   await supabase.update(
     "sql_playground_lesson_progress",
     `user_id=eq.${encodeURIComponent(request.user.id)}&question_id=eq.${encodeURIComponent(question.id)}`,
     {
       status: "completed",
       reflection: reflection.slice(0, 4000),
+      last_validation: {
+        ...(progress.last_validation || {}),
+        completion_hint_level: completionHintLevel,
+      },
       completed_at: progress.completed_at || completedAt,
       updated_at: completedAt,
     },

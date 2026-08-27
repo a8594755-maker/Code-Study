@@ -7,8 +7,11 @@ Supabase PostgreSQL 的公開 Olist 資料，能力定義仍以 repo 的五章�
 
 - 五個 Chapter、每章六個循序任務，共 30 個真實 Olist 分析問題。
 - Example → 相似題 → 變形題 → 資料驗證 → 章末獨立挑戰。
+- Chapter 1 提供白話觀念、Excel／供應鏈類比、術語卡、人的解題順序、逐行範例與常見錯誤。
+- Chapter 1 使用五階 Help Ladder：概念 → 表／欄／子句 → SQL 骨架 → 接近完成 → 完整答案與逐行解析。
 - 題目逐題解鎖；查詢通過且完成自己的 Analyst Note 後才開下一題。
-- SQL reference answer 只存在伺服器；瀏覽器只取得題目、提示與驗收條件。
+- SQL reference answer 只存在伺服器；必須先真實執行一次並依序查看四階提示，才會按帳號開放完整解答。
+- 完成狀態區分「引導完成」與「獨立掌握」；使用第 0–1 階提示完成才算 Independent。
 - 自動比較欄位、列數、數值與排序，允許不同但結果正確的 SQL 寫法。
 - 每次 attempt 先寫入帳號 Query Log，再執行 SQL；Log 失敗時查詢不執行。
 - Dashboard 顯示五章進度、技能精熟度、首答正確率、錯誤模式與近 14 天活動。
@@ -76,7 +79,7 @@ PORT=3001
 4. Database RPC 再次檢查語句類型、mutating keywords 與危險 functions。
 5. authenticated database role 對 Olist 只有 `SELECT`。
 6. PostgreSQL statement timeout 為 8 秒，結果最多回傳 500 列。
-7. API 每個來源每分鐘最多執行 30 次。
+7. API 每個登入帳號每分鐘最多執行 30 次。
 
 ## Log 與下載
 

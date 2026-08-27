@@ -1,3 +1,5 @@
+import { chapterOneTeaching } from "./chapter-one-teaching.js";
+
 const analystSteps = [
   "先把商業需求改寫成明確的輸出。",
   "確認一列資料代表什麼（grain）以及需要哪些表格與欄位。",
@@ -23,6 +25,7 @@ function question({
   ordered = false,
   readinessDimension,
 }) {
+  const teaching = chapterOneTeaching[id] || null;
   return {
     id,
     chapterId,
@@ -39,6 +42,8 @@ function question({
     compare,
     ordered,
     readinessDimension,
+    lesson: teaching?.lesson || null,
+    solution: teaching?.solution || null,
     analystSteps,
     reflectionPrompt:
       "請用自己的話寫下：這個結果回答了什麼商業問題？你做了哪一個驗證？",
@@ -65,7 +70,12 @@ const chapters = [
         task: "計算 olist.sellers_raw 的總列數，欄位命名為 seller_row_count。",
         example: "相近例子：SELECT COUNT(*) AS order_row_count FROM olist.orders_raw;",
         expected: "1 列、1 欄；欄名為 seller_row_count。",
-        hints: ["想像在 Excel 看工作表總共有幾列。", "會用到 COUNT(*) 與 AS。", "資料表是 olist.sellers_raw。"],
+        hints: [
+          "概念提示：這題只需要把整張表的資料列數出來，不需要先選個別欄位。",
+          "表與輸出提示：資料來源是 olist.sellers_raw，結果欄名必須是 seller_row_count。",
+          "SQL 骨架：SELECT COUNT(*) AS ______ FROM ______;",
+          "接近完成：SELECT COUNT(*) AS seller_row_count FROM olist.______；你只需要補上正確表名。",
+        ],
         skills: ["SELECT", "COUNT", "AS", "schema"],
         referenceSql: "SELECT COUNT(*) AS seller_row_count FROM olist.sellers_raw",
         readinessDimension: "資料取得與基礎 SQL",
@@ -80,7 +90,12 @@ const chapters = [
         task: "計算 olist.order_reviews_raw 的總列數，欄位命名為 review_row_count。",
         example: "上一題使用 COUNT(*) 計算賣家資料量；這次換成評論表與新的別名。",
         expected: "1 列、1 欄；欄名為 review_row_count。",
-        hints: ["沿用上一題的查詢形狀。", "更換資料表與欄位別名。", "表名是 olist.order_reviews_raw。"],
+        hints: [
+          "概念提示：沿用上一題的 COUNT 查詢形狀，只替換和評論任務有關的部分。",
+          "表與輸出提示：資料表是 olist.order_reviews_raw，欄位別名是 review_row_count。",
+          "SQL 骨架：SELECT COUNT(*) AS ______ FROM olist.______;",
+          "接近完成：SELECT COUNT(*) AS review_row_count FROM olist.______；最後補上評論表名。",
+        ],
         skills: ["SELECT", "COUNT", "AS", "transfer"],
         referenceSql: "SELECT COUNT(*) AS review_row_count FROM olist.order_reviews_raw",
         readinessDimension: "資料取得與基礎 SQL",
@@ -95,7 +110,12 @@ const chapters = [
         task: "從 orders_raw 選出 order_id、order_status、order_purchase_timestamp；只保留 delivered，最新下單時間排前面，取 10 列。",
         example: "相近例子：用 WHERE 選狀態、ORDER BY ... DESC 排最新、LIMIT 控制抽樣。",
         expected: "3 欄、最多 10 列；全部為 delivered 且日期由新到舊。",
-        hints: ["先選欄位，再決定資料表。", "用 WHERE order_status = 'delivered'。", "ORDER BY order_purchase_timestamp DESC，最後 LIMIT 10。"],
+        hints: [
+          "概念提示：把需求拆成四段：顯示欄位、狀態篩選、最新排序、列數限制。",
+          "表與子句提示：orders_raw；WHERE 篩 delivered；ORDER BY 購買時間；LIMIT 10。",
+          "SQL 骨架：SELECT 三個欄位 FROM olist.orders_raw WHERE ... ORDER BY ... DESC LIMIT ...;",
+          "接近完成：WHERE order_status = 'delivered' ORDER BY order_purchase_timestamp DESC LIMIT 10；你還要補 SELECT 欄位與 FROM。",
+        ],
         skills: ["WHERE", "ORDER BY", "DESC", "LIMIT"],
         referenceSql: "SELECT order_id, order_status, order_purchase_timestamp FROM olist.orders_raw WHERE order_status = 'delivered' ORDER BY order_purchase_timestamp DESC LIMIT 10",
         ordered: true,
@@ -111,7 +131,12 @@ const chapters = [
         task: "選出 order_id、order_status、order_delivered_customer_date；只保留送達日期為 NULL 的資料，依購買時間由新到舊取 15 列。",
         example: "缺少值不能用 = NULL，要使用 IS NULL。",
         expected: "3 欄、最多 15 列；送達日期全部為 NULL。",
-        hints: ["NULL 代表未知或缺少。", "條件是 order_delivered_customer_date IS NULL。", "排序欄仍可使用未顯示在結果中的 order_purchase_timestamp。"],
+        hints: [
+          "概念提示：NULL 代表缺少或未知，不能用 = NULL 比較。",
+          "表與子句提示：在 orders_raw 使用 order_delivered_customer_date IS NULL。",
+          "SQL 骨架：SELECT 三個欄位 FROM ... WHERE ... IS NULL ORDER BY ... DESC LIMIT 15;",
+          "接近完成：WHERE order_delivered_customer_date IS NULL ORDER BY order_purchase_timestamp DESC LIMIT 15；你還要補 SELECT 與 FROM。",
+        ],
         skills: ["NULL", "IS NULL", "ORDER BY", "validation"],
         referenceSql: "SELECT order_id, order_status, order_delivered_customer_date FROM olist.orders_raw WHERE order_delivered_customer_date IS NULL ORDER BY order_purchase_timestamp DESC LIMIT 15",
         ordered: true,
@@ -127,7 +152,12 @@ const chapters = [
         task: "選出 review_id、review_score，使用 CASE 建立 review_group：1–2 為 negative、3 為 neutral、4–5 為 positive；依 review_score 排序後取 20 列。",
         example: "CASE WHEN 像 Excel IF：條件成立就回傳指定分類。",
         expected: "3 欄；review_group 與 review_score 的規則一致。",
-        hints: ["先寫兩個 WHEN，最後用 ELSE。", "1–2 可以寫 review_score <= 2。", "CASE 結束要使用 END AS review_group。"],
+        hints: [
+          "概念提示：把 Excel IF 的三個分支先寫成人話：1–2、3、其他。",
+          "欄位與規則提示：使用 review_score；前兩段是 WHEN，4–5 分交給 ELSE。",
+          "SQL 骨架：CASE WHEN review_score <= 2 THEN ... WHEN review_score = 3 THEN ... ELSE ... END AS review_group。",
+          "接近完成：CASE WHEN review_score <= 2 THEN 'negative' WHEN review_score = 3 THEN 'neutral' ELSE 'positive' END AS review_group；你還要補其餘 SELECT、FROM、排序與 LIMIT。",
+        ],
         skills: ["CASE WHEN", "business rules", "alias"],
         referenceSql: "SELECT review_id, review_score, CASE WHEN review_score <= 2 THEN 'negative' WHEN review_score = 3 THEN 'neutral' ELSE 'positive' END AS review_group FROM olist.order_reviews_raw ORDER BY review_score, review_id LIMIT 20",
         ordered: true,
@@ -143,7 +173,12 @@ const chapters = [
         task: "從 order_items_raw 選出 order_id、product_id、seller_id、price、freight_value；price >= 1000，依 price 由高到低取 12 列。",
         example: "這是 Chapter 1 綜合題；請自己決定 SELECT、WHERE、ORDER BY 與 LIMIT 的順序。",
         expected: "5 欄、最多 12 列；price 都至少 1,000 且由高到低。",
-        hints: ["先把一句需求拆成欄位、篩選、排序、列數。", "金額條件使用 >=。", "完整表名為 olist.order_items_raw。"],
+        hints: [
+          "概念提示：先把需求寫成 output、source、filter、sort、limit 五格，不要直接猜完整 SQL。",
+          "表與條件提示：所有欄位都在 olist.order_items_raw；price 至少 1000 要使用 >=。",
+          "SQL 骨架：SELECT 五個欄位 FROM ... WHERE price ... ORDER BY price ... LIMIT ...;",
+          "接近完成：FROM olist.order_items_raw WHERE price >= 1000 ORDER BY price DESC, order_id LIMIT 12；你還要自行列出五個輸出欄位。",
+        ],
         skills: ["SELECT", "WHERE", "ORDER BY", "LIMIT", "independent"],
         referenceSql: "SELECT order_id, product_id, seller_id, price, freight_value FROM olist.order_items_raw WHERE price >= 1000 ORDER BY price DESC, order_id LIMIT 12",
         ordered: true,
@@ -280,6 +315,12 @@ export function getChapters() {
 }
 
 export function publicQuestion(item) {
-  const { referenceSql: _referenceSql, compare: _compare, ordered: _ordered, ...safe } = item;
+  const {
+    referenceSql: _referenceSql,
+    solution: _solution,
+    compare: _compare,
+    ordered: _ordered,
+    ...safe
+  } = item;
   return safe;
 }

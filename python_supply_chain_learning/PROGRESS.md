@@ -5,12 +5,13 @@
 ## 現在位置（≤10 行，每次上課後整段覆寫；git diff 就是它的歷史）
 
 - 目前課程：五章 Entry-Level SQL Analyst 主線；現在在 Chapter 1 / Unit 1 — Database first look。
-- 最近設定：2026-08-25 — 本機 VS Code／Jupyter 環境與五章課綱已完成；本次沒有新增 SQL 能力證據。
+- 最近設定：2026-08-27 — Supply SQL Lab 的 Chapter 1 已補上白話教學、逐行範例、五階提示與引導／獨立掌握判定。
+- 能力證據：本次只補強學習產品，尚未假設或新增任何個人 SQL 能力證據。
 - 下一步：
-  1. 在 VS Code 跑 `01_sql/reference/connection_check.sql`（選到分號 → Windows `Ctrl+Shift+E`）。
-  2. 打開 `01_sql/ch01_fundamentals/unit01_2_practice.sql`；家教先出暖身第 1 題，完成 review 後才出第 2 題。
+  1. 登入正式 Supply SQL Lab，從 Chapter 1 第 1 題開始，只做目前這一題。
+  2. 先讀教學再自行 Run；卡住時依序使用提示，完成後由家教 review，再進第 2 題。
 - 白紙債：Chapter 1 / Unit 1 `unit01_3_challenge.sql` 未做；未清前不開 Unit 2。
-- 卡住的：尚未證明能不看範例獨立寫查詢；目前所有 SQL 概念狀態維持原樣。
+- 卡住的：尚未實際測試新版 Chapter 1，也尚未證明能不看答案獨立寫查詢；SQL 概念狀態維持原樣。
 
 ## 概念表（五級量尺；原 40 列完整保留，2026-08-25 起新增五章 SQL 追蹤列；Next Check 欄 = 暖身題庫 + 正式詞彙表）
 
@@ -132,6 +133,14 @@ Not Started -> Introduced -> Practiced -> Can Explain -> Independent
 ```
 
 （新條目請貼在這一行下方、歷史區塊上方。）
+
+### 2026-08-27
+
+- 今天做了：補強 Supply SQL Lab 的 Chapter 1 教學流程，加入白話觀念、供應鏈／Excel 類比、逐行範例、四階提示、完整解答與精熟狀態。
+- 商業情境：讓零基礎學習者遇到不會的題目時，可以先理解、再嘗試、逐步求助，而不是只能猜答案。
+- 我現在會：這次是產品功能補強，尚未新增或假設任何個人 SQL 能力證據。
+- 還不懂：尚未由學生本人走過 Chapter 1 第 1 題，無法確認教學文字、提示節奏與操作是否真的好懂。
+- 下次：學生在正式站實測 Chapter 1 第 1 題；家教只 review 這一題的 SQL、結果與卡住位置，再決定是否調整。
 
 ### 2026-08-25
 
