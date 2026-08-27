@@ -4,14 +4,15 @@
 
 ## 現在位置（≤10 行，每次上課後整段覆寫；git diff 就是它的歷史）
 
-- 上次上課：2026-07-01 — Olist SQL 首課，中文版 Practice 1–3 已跑過（檔內作答空白保持未填）。
-- 下一步（大整理後第一課）：
-  1. 跑 `01_sql/reference/connection_check.sql` 驗證新家（選到分號 → Cmd+Shift+E）。
-  2. 打開 `01_sql/ch01_first_look/2_practice.sql`，從暖身區開始。
-- 白紙債：ch01 `3_challenge.sql` 未做。
-- 卡住的：還不能不看範例獨立寫查詢（本課程的核心矯正目標）。
+- 目前課程：五章 Entry-Level SQL Analyst 主線；現在在 Chapter 1 / Unit 1 — Database first look。
+- 最近設定：2026-08-25 — 本機 VS Code／Jupyter 環境與五章課綱已完成；本次沒有新增 SQL 能力證據。
+- 下一步：
+  1. 在 VS Code 跑 `01_sql/reference/connection_check.sql`（選到分號 → Windows `Ctrl+Shift+E`）。
+  2. 打開 `01_sql/ch01_fundamentals/unit01_2_practice.sql`；家教先出暖身第 1 題，完成 review 後才出第 2 題。
+- 白紙債：Chapter 1 / Unit 1 `unit01_3_challenge.sql` 未做；未清前不開 Unit 2。
+- 卡住的：尚未證明能不看範例獨立寫查詢；目前所有 SQL 概念狀態維持原樣。
 
-## 概念表（五級量尺；全部 40 列自 concept_tracker.md 原樣移入，一列不少；Next Check 欄 = 暖身題庫 + 正式詞彙表）
+## 概念表（五級量尺；原 40 列完整保留，2026-08-25 起新增五章 SQL 追蹤列；Next Check 欄 = 暖身題庫 + 正式詞彙表）
 
 Status scale（狀態量尺）:
 
@@ -79,6 +80,38 @@ Not Started -> Introduced -> Practiced -> Can Explain -> Independent
 | `AND` | combine filter conditions（合併篩選條件） | Introduced | Olist Student First SELECT Workbench | `condition_1 AND condition_2` | Explain why both conditions must be true |
 | `NOT LIKE` | text pattern exclusion（排除文字模式） | Introduced | Olist Student First SELECT Workbench | `schema_name NOT LIKE 'pg_%'` | Explain what pattern is being excluded |
 | `<>` | not equal operator（不等於運算子） | Introduced | Olist Student First SELECT Workbench | `schema_name <> 'information_schema'` | Use it to filter out one value |
+| Primary Key | 主鍵：唯一識別一列的欄位 | Not Started | Chapter 1 Unit 6 | `orders_raw.order_id` | Explain why a primary key should identify one row |
+| Foreign Key | 外鍵：指向另一張表主鍵的欄位 | Not Started | Chapter 1 Unit 6 | `order_items_raw.order_id` | Explain how it connects order items to orders |
+| data type | 資料型別：文字、數字、日期等值的種類 | Not Started | Chapter 1 Unit 2 | timestamp vs numeric | Explain why a date and text behave differently |
+| `NULL` / `IS NULL` | 缺少或未知的值／檢查空值 | Not Started | Chapter 1 Unit 4 | `WHERE delivered_at IS NULL` | Explain why `= NULL` does not work |
+| `DISTINCT` | 移除結果中的重複組合 | Not Started | Chapter 1 Unit 4 | distinct order statuses | Explain what is being made unique |
+| `IN` / `BETWEEN` / `LIKE` | 清單、範圍與文字模式篩選 | Not Started | Chapter 1 Unit 3 | status list / date range / text pattern | Choose the right filter for three needs |
+| `OR` / `NOT` | 任一條件成立／反向條件 | Not Started | Chapter 1 Unit 3 | status A OR status B | Explain AND vs OR without code |
+| `CASE WHEN` | 條件分類，類似 Excel IF | Not Started | Chapter 1 Unit 5 | classify delivery status | Build one business category |
+| date / string / numeric functions | 日期、文字、數字函數 | Not Started | Chapter 1 Unit 5 | `DATE_TRUNC`, `LOWER`, `ROUND` | Explain input and output of one function |
+| SQL logical order | SQL 邏輯執行順序 | Not Started | Chapter 1 Unit 6 | FROM → WHERE → SELECT → ORDER BY → LIMIT | Explain why an alias may not work in WHERE |
+| debugging | 除錯：縮小問題並讀懂錯誤訊息 | Not Started | Chapter 1 Unit 6 | run one clause at a time | Diagnose one real SQL error |
+| grain | 資料粒度：一列在商業上代表什麼 | Not Started | Chapter 2 Unit 1 | one order vs one order item | Explain why grain matters before JOIN |
+| relationship cardinality | 表格關係數量：一對一、一對多、多對多 | Not Started | Chapter 2 Unit 1 | orders to order_items | Identify one-to-many in Olist |
+| `INNER JOIN` | 只保留兩邊成功配對的列 | Not Started | Chapter 2 Unit 2 | orders ↔ customers | Explain which rows disappear |
+| `LEFT JOIN` | 保留左表全部列，再接右表 | Not Started | Chapter 2 Unit 2 | orders → reviews | Explain why it finds missing matches |
+| RIGHT / FULL / Self Join | 其他 JOIN 方向與同表串接 | Not Started | Chapter 2 Unit 4 | small interview examples | Choose when each is appropriate |
+| Multiple Joins | 串接三張以上資料表 | Not Started | Chapter 2 Unit 3 | customers → orders → items → products | State each JOIN key before writing |
+| JOIN duplication | JOIN 後因粒度不同造成列數／金額放大 | Not Started | Chapter 2 Unit 5 | order joined to many items | Reconcile row counts before and after JOIN |
+| anti-join | 找出沒有配對紀錄的方法 | Not Started | Chapter 2 Unit 5 | `LEFT JOIN ... IS NULL` | Find one type of missing relationship |
+| aggregate functions | 彙總函數：COUNT、SUM、AVG、MIN、MAX | Not Started | Chapter 3 Unit 1 | total payment value | Match one business metric to a function |
+| `GROUP BY` | 分組彙總，類似 Excel 樞紐分析表 | Not Started | Chapter 3 Unit 1 | revenue by payment type | Explain one result row per group |
+| `HAVING` | 在彙總後篩選群組 | Not Started | Chapter 3 Unit 1 | groups above a threshold | Explain WHERE vs HAVING |
+| Subquery | 放在另一個查詢中的子查詢 | Not Started | Chapter 3 Unit 2 | values above average | Explain inner result and outer use |
+| CTE / `WITH` | 具名的中繼查詢步驟 | Not Started | Chapter 3 Unit 3 | monthly_sales | Split one analysis into testable steps |
+| Window Function / `OVER` | 不折疊資料列的分析計算 | Not Started | Chapter 3 Unit 4 | ranking within category | Explain window result vs GROUP BY result |
+| `PARTITION BY` | 在 Window Function 內分組重算 | Not Started | Chapter 3 Unit 4 | rank per category | Explain where ranking restarts |
+| `ROW_NUMBER` / `RANK` / `DENSE_RANK` | 排名函數 | Not Started | Chapter 3 Unit 4 | Top 3 products per category | Explain how ties differ |
+| `LAG` / `LEAD` | 取得前一列／下一列的值 | Not Started | Chapter 3 Unit 5 | previous month revenue | Explain why LAG supports growth analysis |
+| running total / moving average | 累計／移動平均 | Not Started | Chapter 3 Unit 5 | cumulative revenue / 3-month average | Explain the window frame in business terms |
+| KPI / metric definition | 關鍵績效指標／指標定義 | Not Started | Chapter 4 Case 1 | on-time delivery rate | State numerator, denominator, scope, and date |
+| validation / reconciliation | 驗證／對帳 | Not Started | Chapter 4 Case 4 | totals, NULLs, duplicates | Name three checks before reporting |
+| insight / assumption / limitation | 洞察／假設／限制 | Not Started | Chapter 4 Case 5 | executive summary | Separate evidence from inference |
 
 ## 學習日誌（append-only（只增不改），新條目在上，繁中模板）
 
@@ -99,6 +132,14 @@ Not Started -> Introduced -> Practiced -> Can Explain -> Independent
 ```
 
 （新條目請貼在這一行下方、歷史區塊上方。）
+
+### 2026-08-25
+
+- 今天做了：把 SQL 主線重整為五個求職導向 Chapter，設定 Windows VS Code、PostgreSQL 擴充與逐題教學規則。
+- 商業情境：建立從陌生資料庫、SQL 分析、商業解讀到 Entry-Level 面試與作品集的單一路徑。
+- 我現在會：本次是課程系統設定，沒有新增或假設任何 SQL 能力證據。
+- 還不懂：尚未在新環境確認 Supabase 連線，也尚未完成 Unit 1 的第一題暖身。
+- 下次：先跑 connection check，再由家教一次只出一題，從 Unit 1 暖身第 1 題開始。
 
 ### ⬇ 歷史區塊：2026-05~07 英文原始紀錄（大整理 2026-07-07 前），唯讀原文保存 — 請勿修改
 

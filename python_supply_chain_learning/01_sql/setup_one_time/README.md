@@ -43,9 +43,11 @@
 
 3. 依序跑 **1 → 2 → 3**。注意第 2 步：必須**從 repo 根目錄**啟動 psql 再執行，因為檔內的 `\copy` 用的是相對路徑 `03_data/raw/olist/...`：
 
-   ```bash
-   /Library/PostgreSQL/18/bin/psql "postgresql://postgres.ylmuvsdegmpoiygbtipi@aws-1-us-west-2.pooler.supabase.com:5432/postgres?sslmode=require"
+   ```powershell
+   psql "postgresql://postgres.ylmuvsdegmpoiygbtipi@aws-1-us-west-2.pooler.supabase.com:5432/postgres?sslmode=require"
    ```
+
+   Windows 與 macOS 都可使用上面的命令，前提是 `psql` 已安裝並在 PATH（系統命令搜尋路徑）內；日常上課不需要安裝它，使用 VS Code PostgreSQL 擴充即可。
 
    密碼只在提示時輸入，永不寫進檔案。連上後：
 

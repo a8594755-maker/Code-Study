@@ -1,18 +1,32 @@
-# 01_sql — SQL 分析課（Olist × Supabase PostgreSQL）
+# 01_sql — 五章 Entry-Level SQL Analyst 實戰課
 
-這是 SQL 主線的**唯一課程計畫文件**。你的進度不記在這裡 — 進度只住在根目錄的 [PROGRESS.md](../PROGRESS.md)。這份文件回答三個問題：怎麼連線執行、課程長什麼樣、八週怎麼走。
+這是 SQL 主線的**唯一詳細課程計畫**。學習狀態只記在 [PROGRESS.md](../PROGRESS.md)，家教規則只記在 [AGENTS.md](../AGENTS.md)。
 
-**這門課教的不是背語法，而是分析師的工作流**：先有商業問題 → 找對表 → 小步查詢 → 讀懂結果 → 用商業語言講出來。你的供應鏈經驗（交期、對帳、KPI）就是這門課的主場優勢。
+這五章的目標不是「看完 SQL 語法」，而是建立一條可以提出求職證據的工作流：拿到陌生 database（資料庫）→ 看懂 schema（資料表分組）→ 自己寫 SQL → 驗證結果 → 找出 business insight（商業洞察）→ 向主管解釋。
+
+完成五章後，目標是具備申請 Entry-Level Data Analyst、Business Analyst、Supply Chain Analyst 等 SQL 職缺的基礎。課程不能保證錄取；真正的完成證據是你能獨立寫、執行、debug（除錯）並解釋自己的查詢。
 
 ---
 
-## ① 連線與執行方法
+## ① 現在從哪裡開始
 
-### 方法一：VS Code（日常主要用法）
+目前只開放 Chapter 1 的 Unit 1，這是刻意的：**目前 Unit 過關後，才建立下一個 Unit；Chapter 1 過關後，才建立 Chapter 2。**
 
-使用 VS Code 擴充 **PostgreSQL by Microsoft**（擴充 ID：`ms-ossdata.vscode-pgsql`，本 repo 的 `.vscode/extensions.json` 已推薦安裝）。
+1. 先讀 [PROGRESS.md](../PROGRESS.md) 的「現在位置」。
+2. 在 VS Code 執行 [connection_check.sql](reference/connection_check.sql)。
+3. 目前教材依序是：
+   - [unit01_0_first_session_zh.sql](ch01_fundamentals/unit01_0_first_session_zh.sql)：第一次課程的歷史保存。
+   - [unit01_1_lesson.sql](ch01_fundamentals/unit01_1_lesson.sql)：家教示範。
+   - [unit01_2_practice.sql](ch01_fundamentals/unit01_2_practice.sql)：你的逐題練習區，家教永不代填。
+   - [unit01_3_challenge.sql](ch01_fundamentals/unit01_3_challenge.sql)：白紙挑戰，過關才開 Unit 2。
 
-連線設定值：
+---
+
+## ② VS Code 固定操作方式
+
+主要工具是 VS Code 的 **PostgreSQL by Microsoft** extension（擴充套件），ID 為 `ms-ossdata.vscode-pgsql`。
+
+連線設定：
 
 ```text
 Host / Server: aws-1-us-west-2.pooler.supabase.com
@@ -23,134 +37,292 @@ SSL mode:      require
 Connection name: Supabase Olist Practice
 ```
 
-執行方式（**一次一句，是這門課的鐵律**）：
+密碼只在 VS Code 的連線提示內輸入，永不寫入 repo、設定檔、SQL、聊天或截圖。
 
-1. 打開 `.sql` 檔。
-2. 用滑鼠**從查詢開頭選取到分號 `;` 為止** — 沒選到分號，執行的可能是半句。
-3. 按 **Cmd+Shift+E**。
-4. 結果出現在 Results 面板 — 每次執行後先讀結果，再往下一句。
+每一題都使用同一個操作循環：
 
-### 方法二：psql（備用／跑整個檔案時）
+1. 家教只給目前這 1 題的商業情境與任務。
+2. 你在 `unitNN_2_practice.sql` 或 `unitNN_3_challenge.sql` 的對應作答區自己寫 SQL。
+3. 用滑鼠從查詢開頭選取到分號 `;`。
+4. Windows 按 `Ctrl+Shift+E`；macOS 按 `Cmd+Shift+E`。
+5. 先看 Results（結果）或原始英文錯誤訊息。
+6. 把 SQL 與結果／錯誤貼給家教。
+7. 家教 review（檢查）完這題，確認你理解後，才出下一題。
 
-從 repo 根目錄啟動 terminal（終端機），執行：
+如果快捷鍵沒有反應，可開啟 Command Palette（命令選單），搜尋 PostgreSQL 的 execute query（執行查詢）命令。不要一次執行整份練習檔。
 
-```bash
-/Library/PostgreSQL/18/bin/psql "postgresql://postgres.ylmuvsdegmpoiygbtipi@aws-1-us-west-2.pooler.supabase.com:5432/postgres?sslmode=require"
+備用方法是 `psql`。只有電腦已安裝 PostgreSQL client（客戶端）時才使用：
+
+```powershell
+psql "postgresql://postgres.ylmuvsdegmpoiygbtipi@aws-1-us-west-2.pooler.supabase.com:5432/postgres?sslmode=require"
 ```
 
-出現提示時才輸入密碼。**密碼只在提示時輸入 — 永不寫進任何檔案、設定或對話紀錄。**
+出現提示時才輸入密碼。
 
-連上後可以用 `\i` 執行整個 SQL 檔，例如：
+---
+
+## ③ 一題一題怎麼學
+
+每個小概念預設 3 題，必要時增加到 5 題，而且永遠一次只出一題：
+
+| 題次 | 用途 | 家教會提供什麼 |
+|---|---|---|
+| 第 1 題 | 模仿並建立基本格式 | 人的思考方式＋一個已講過的相近例子 |
+| 第 2 題 | 換欄位、資料表或條件 | 商業需求＋少量提示 |
+| 第 3 題 | 確認能否獨立 | 只給商業需求，不給語法骨架 |
+| 第 4–5 題 | 只在需要時針對補強 | 針對重複發生的真錯誤換參數再練 |
+
+每題的回饋順序固定：
+
+1. 先指出你做對的思考或習慣。
+2. 分清楚「真錯誤」與「可選的風格建議」。
+3. 真錯誤先用 hint ladder（提示階梯）處理，不直接貼完整答案。
+4. 你自己修正、重新執行並解釋結果。
+5. 這題穩定後才進下一題。
+
+「看過三題」不算會；第三題在白紙狀態完成、結果正確，而且能逐行說明，才是有效證據。
+
+---
+
+## ④ 五章能力地圖
+
+| Chapter | 主旨 | 完成後應有的能力 |
+|---|---|---|
+| **1 — SQL Fundamentals for Analysts** | 拿到正確資料 | 看懂資料庫結構；獨立使用 SELECT、WHERE、CASE、常用 function（函數）；能排除基礎錯誤 |
+| **2 — JOIN & Relational Database** | 正確連接公司資料 | 看懂 ERD（資料關係圖）、key（串接鍵）與資料粒度；完成多表 JOIN 並診斷重複或漏資料 |
+| **3 — Advanced Analytical SQL** | 寫分析師等級查詢 | 使用 aggregation（彙總）、Subquery、CTE、Window Functions 完成排名、趨勢與成長分析 |
+| **4 — SQL Business Analysis** | 解決商業問題 | 自己選表、定義 KPI、拆解問題、驗證結果，提出可向主管說明的 insight |
+| **5 — Entry-Level SQL Analyst Simulation** | 產出求職證據 | 完成作品集、工作模擬與 SQL 面試；逐行解釋自己的所有查詢 |
+
+能力成長順序：
 
 ```text
-\i 01_sql/reference/connection_check.sql
+Chapter 1 拿資料
+    ↓
+Chapter 2 連資料
+    ↓
+Chapter 3 分析資料
+    ↓
+Chapter 4 解決 Business Problem
+    ↓
+Chapter 5 像 Entry-Level Analyst 一樣工作
 ```
 
-隨時想確認連線是否正常，跑 [reference/connection_check.sql](reference/connection_check.sql) 即可（可重複執行，無副作用）。
+---
 
-### Read-only（唯讀）鐵則
+## ⑤ Chapter 1 — SQL Fundamentals for Analysts
 
-課程與練習中，**只允許**這些讀取型指令：
+### 章節主旨
+
+從「照著範例打語法」變成「主管給一個單表需求時，能自己拆條件並抓出正確資料」。本章使用 Supabase PostgreSQL 上的 Olist 真實電商資料。
+
+### Unit 順序
+
+| Unit | 核心內容 | 實戰問題 | Unit 關卡 |
+|---|---|---|---|
+| **1. Database first look**（目前開放） | database、schema、table（資料表）、row（資料列）、column（欄位）、information_schema、SELECT、FROM、COUNT、LIMIT、基本 ORDER BY | 新到職第一天：有哪些表？每張表多大？一筆訂單代表什麼？ | 白紙列出 Olist 表並安全預覽一張；用 Excel 類比解釋結構 |
+| **2. SELECT accurately** | 指定欄位、alias（別名）、精確欄名、semicolon（分號）、基礎資料型別 | 主管指定欄位時，正確產出清單，不因拼字、空格或引號出錯 | 三次變形都能從白紙寫出 SELECT + FROM |
+| **3. Filter rows** | WHERE、`=`、`<>`、AND、OR、NOT、IN、BETWEEN、LIKE | 找出指定狀態、日期、州別、金額範圍的訂單 | 把一句英文需求拆成多個條件並解釋 AND／OR |
+| **4. NULL, DISTINCT, sort** | NULL、IS NULL、DISTINCT、ORDER BY 多欄、ASC／DESC、LIMIT | 找缺漏資料、唯一值、最新或最高的紀錄 | 正確處理 NULL；換兩次條件仍能排序與限制列數 |
+| **5. CASE and functions** | CASE WHEN；date、string、numeric functions；型別與格式 | 把訂單分級、整理日期與文字、計算可用欄位 | 說明 CASE WHEN 與 Excel IF 的關係，並完成一個分類查詢 |
+| **6. Query logic and debugging** | Primary Key（主鍵）、Foreign Key（外鍵）、SQL logical order（邏輯執行順序）、讀錯誤訊息、逐段驗證 | 面對陌生單表要求，自己找欄、寫查詢、修錯並驗證 | Chapter 1 綜合需求白紙完成，且能逐行解釋 |
+
+### Chapter 1 最終能力題型
+
+主管說：「列出指定期間內、某個州、金額高於門檻、排除特定狀態的訂單，依金額或日期排序。」你要能自己完成以下過程，而不是等家教提示關鍵字：
+
+```text
+找表與欄位 → 拆篩選條件 → 寫 SQL → 在 VS Code 執行 → 驗證 → 解釋
+```
+
+---
+
+## ⑥ Chapter 2 — JOIN & Relational Database
+
+### 章節主旨
+
+學會公司真正的 relational database（關聯式資料庫）。資料分散在 `customers_raw`、`orders_raw`、`order_items_raw`、`products_raw`、`sellers_raw`、`order_payments_raw` 等表，必須先弄清楚一列代表什麼、用哪個 key 串接，才能相信結果。
+
+### Unit 順序
+
+| Unit | 核心內容 | Olist 實戰 |
+|---|---|---|
+| **1. Relationships and ERD** | Primary／Foreign Key、one-to-one、one-to-many、many-to-many、grain（資料粒度） | 畫出 orders → order_items → products → sellers |
+| **2. INNER and LEFT JOIN** | INNER JOIN、LEFT JOIN、table alias（表別名）、ON | 訂單接客戶；訂單接付款；解釋 INNER 少了誰 |
+| **3. Multiple joins** | 三至五表串接、選擇起始表 | 從客戶州別一路接到商品與賣家 |
+| **4. JOIN variants** | RIGHT JOIN、FULL JOIN、Self Join 的使用情境與面試理解 | 用小型案例比較保留哪一邊；只有合適時才使用 |
+| **5. JOIN debugging** | 重複列、missing records（漏接紀錄）、row count 前後對帳、anti-join | 找出 JOIN 後金額被放大的原因，確認孤兒紀錄 |
+| **6. Chapter challenge** | 多表綜合分析 | 找出為特定地區客戶帶來最高營收的賣家／商品品類 |
+
+### Chapter 2 過關證據
+
+- 能口述 `orders_raw` ↔ `order_items_raw` ↔ `products_raw` ↔ `sellers_raw` 的 key。
+- 能解釋為什麼一張訂單 JOIN 明細後會變成多列。
+- 能先數 JOIN 前後列數，再判斷營收是否被重複計算。
+- 能說明某題為何用 LEFT JOIN，不用 INNER JOIN。
+
+---
+
+## ⑦ Chapter 3 — Advanced Analytical SQL
+
+### 章節主旨
+
+從資料清單進入真正的分析師 SQL：彙總、分段組裝查詢、排名、時間比較與趨勢計算。
+
+### Unit 順序
+
+| Unit | 核心內容 | 分析題型 |
+|---|---|---|
+| **1. Aggregation** | COUNT、SUM、AVG、MIN、MAX、GROUP BY、HAVING | 各狀態訂單數、各付款方式金額、品類營收 |
+| **2. Subquery** | scalar／table subquery、外層篩選 | 高於平均值的訂單或商品 |
+| **3. CTE** | WITH、逐段命名、可讀性與驗證 | 先算月營收，再做下一步分析 |
+| **4. Window ranking** | OVER、PARTITION BY、ROW_NUMBER、RANK、DENSE_RANK | 每個品類 Top 3 商品、客戶排名 |
+| **5. Window comparison** | SUM OVER、AVG OVER、LAG、LEAD | running total（累計）、moving average（移動平均）、MoM growth（月增率） |
+| **6. Chapter challenge** | 彙總＋CTE＋Window Functions 綜合 | 月營收、前期營收、成長率、類別內排名 |
+
+### Chapter 3 過關證據
+
+- 白紙寫出 GROUP BY 彙總並說明 WHERE 與 HAVING 的差別。
+- 把複雜問題拆成可逐段執行的 CTE。
+- 寫出每組 Top N，不把 GROUP BY 與 Window Function 混為一談。
+- 能解釋 LAG 為什麼讓目前月份取得上個月份的值。
+
+---
+
+## ⑧ Chapter 4 — SQL Business Analysis
+
+### 章節主旨
+
+家教不再預告「今天要用 JOIN」；只提供 business problem（商業問題），由你決定表、key、metric（指標）與 SQL 結構。
+
+固定分析流程：
+
+```text
+Business Question
+    ↓
+Understand Tables and Grain
+    ↓
+Define Metric and Assumptions
+    ↓
+Write SQL in Small Steps
+    ↓
+Validate and Reconcile
+    ↓
+Explain Insight and Limitation
+```
+
+### Case 順序
+
+| Case | 分析領域 | 代表問題 |
+|---|---|---|
+| **1. Sales** | Revenue、growth、freight ratio、product performance；profit／margin 只在真的有成本資料時分析 | 營收變化由哪些品類或地區造成？Olist 沒有成本欄時，為何不能假裝算 profit？ |
+| **2. Customer** | segmentation、repeat customer、average order value、retention | 哪些客群重複購買？客單價有何不同？ |
+| **3. Supply chain** | lead time、late shipment、fulfillment、supplier／seller performance | Q2 遲交是否增加？問題集中在哪些州或賣家？ |
+| **4. Data quality** | duplicates、missing values、incorrect dates、reconciliation（對帳） | 報表交付前，資料能不能信？ |
+| **5. Executive explanation** | insight、assumption、limitation、recommendation | 用非技術主管聽得懂的語言說明發現與限制 |
+
+### Chapter 4 過關證據
+
+拿到「上季銷售下降」或「Q2 遲交增加」這類開放題時，你能自行提出澄清問題、定義 KPI、建立驗證查詢，最後給出有數字依據且不過度推論的結論。
+
+---
+
+## ⑨ Chapter 5 — Entry-Level SQL Analyst Simulation
+
+### 章節主旨
+
+不再學新 command（指令），而是模擬剛進公司的 Analyst 工作：接需求、讀 schema、寫查詢、驗證、說明、接受 review，再把成果整理成作品集與面試故事。
+
+### 階段順序
+
+| 階段 | 產出／證據 |
+|---|---|
+| **1. Requirement intake** | 把模糊需求改寫成分析問題、KPI、範圍與假設 |
+| **2. Olist supply-chain project** | `project.sql`：3–5 個可重跑唯讀查詢，至少包含交期、營收與資料品質 |
+| **3. Validation** | row count、NULL、重複、JOIN 前後對帳與已知限制 |
+| **4. Portfolio write-up** | `PROJECT.md`：繁中主文＋英文摘要；圖表與結果放 `03_data/output/` |
+| **5. Interview training** | `interview_qa.md`、live SQL、逐行解釋、LEFT vs INNER 等追問題 |
+| **6. Job simulation** | 限時接一個新需求，從找表到主管摘要完整做一次 |
+
+### 必練面試題型
+
+- 每組 Top N。
+- second highest（第二高）。
+- duplicate transactions（重複交易）。
+- consecutive months（連續月份購買）。
+- month-over-month growth（月增率）。
+- first／last order（首次／最後一次訂單）。
+- 為何用 LEFT JOIN，不用 INNER JOIN。
+- 查詢結果不合理時，如何逐步 debug。
+
+### 五章完成定義
+
+以下全部成立，才標記為 Job / Interview Ready（求職／面試準備完成）：
+
+- Chapter 1–4 的章末 challenge 都在提示不超過第 ① 階時通過。
+- 有一份可從頭重跑的 Chapter 5 專案，學生能逐行解釋。
+- 專案含至少一段資料品質與限制說明。
+- 完成至少兩次模擬面試，其中一次含 live SQL。
+- 面對一個相近但沒看過的新題目，可以自己拆解並完成。
+
+---
+
+## ⑩ 教材檔案與開放規則
+
+每個 Unit 固定使用三段鷹架：
+
+| 檔案 | 用途 | 規則 |
+|---|---|---|
+| `unitNN_1_lesson.sql` | 家教示範 | 商業問題 → 人的思考 → SQL → 看什麼結果；一次只跑一句 |
+| `unitNN_2_practice.sql` | 學生練習 | 每個概念 3 題起；由學生自己寫，家教永不代填 |
+| `unitNN_3_challenge.sql` | 白紙挑戰 | 新參數、低提示、附口頭理解關卡；通過才開下一 Unit |
+
+章末另使用最後一個 Unit 的 challenge 做綜合關卡，不為關卡另開 tracker（追蹤檔）。只有當前 Unit 真的過關，家教才建立下一個 Unit；只有本章真的過關，才建立下一章資料夾。
+
+目前資料夾：
+
+```text
+01_sql/
+└── ch01_fundamentals/
+    ├── unit01_0_first_session_zh.sql
+    ├── unit01_1_lesson.sql
+    ├── unit01_2_practice.sql
+    └── unit01_3_challenge.sql
+```
+
+看不到 Chapter 2–5 的資料夾是正常的；詳細計畫在本 README，空資料夾不代表進度。
+
+---
+
+## ⑪ SQL 安全與驗證
+
+日常課程只允許唯讀查詢：
 
 ```sql
 SELECT
 WITH ... SELECT
 SHOW
 EXPLAIN
--- 以及查 information_schema（資料庫的目錄表）
 ```
 
-**禁止**執行任何會寫入或改動資料庫的指令：
+禁止 `INSERT`、`UPDATE`、`DELETE`、`DROP`、`TRUNCATE`、`ALTER`、`CREATE`、`GRANT`。唯一例外是 [setup_one_time](setup_one_time/README.md)，而且只有你明確要求重建資料庫、理解後果後才能使用。
 
-```sql
-INSERT
-UPDATE
-DELETE
-DROP
-TRUNCATE
-ALTER
-CREATE
-GRANT
-```
+探索 `geolocation_raw`（約 100 萬列）與 `order_items_raw`（約 11.2 萬列）必須加 LIMIT 或使用彙總。JOIN 或彙總後的結果至少用一種方法驗證：row count、抽樣、總額對帳、NULL 檢查或替代寫法交叉比對。
 
-唯一例外是 `setup_one_time/` 裡的一次性腳本，而且只有在明確決定「重建資料庫」時才碰（見 [setup_one_time/README.md](setup_one_time/README.md)）。
+常見陷阱會主動反覆練：
 
-另外兩條紀律：
+- `'canceled'` 只有一個 `l`。
+- `= NULL` 抓不到空值，要使用 `IS NULL`。
+- 一次選取一條完整 SQL，必須包含分號。
+- JOIN 前先確認兩邊的 grain 與 key。
+- `\copy` 是 psql 指令，不能在 VS Code query editor 執行。
 
-- **LIMIT 紀律**：對大表（`geolocation_raw` 100 萬列、`order_items_raw` 11.2 萬列）做探索查詢時，必帶 `LIMIT`（限制列數）或改用彙總 — 就像你不會在 Excel 打開整份百萬列的檔案慢慢捲。
-- 已知陷阱先講：`'canceled'` 只有一個 L；`= NULL` 抓不到空值（要用 `IS NULL`）。
+九張 Olist 表、欄位與 JOIN 路線請查 [data_dictionary.md](reference/data_dictionary.md)。
 
 ---
 
-## ② 8 章課綱
+## ⑫ 節奏與進度原則
 
-> **章節資料夾過關當天才建立 — 看不到 ch03 資料夾是正常的，計畫在這裡。**
-> 目前磁碟上只有 `ch01_first_look/`。每過一章的理解關卡，家教當天才建立下一章的資料夾。空資料夾會說謊，文字計畫不會。
+不再用過期日曆假裝進度。每次 30–60 分鐘，一次完成一個可驗證的小步；每週建議 3 次 SQL 主線，pandas 只作為同概念的副線鏡射。
 
-| 章 | SQL 概念 | 驅動的 Olist 商業問題 | 理解關卡（過關才建下一章） |
-|---|---|---|---|
-| **ch01 first_look** 初次看資料（已完成大半） | SELECT、FROM、LIMIT、COUNT(*)（只用來數整張表的筆數；分組彙總在 ch03）、information_schema、基本 ORDER BY；schema（資料庫資料夾）/table（表）/row（列）/column（欄） | 「你是剛到職的分析師，第一天拿到巴西電商資料庫。有幾張表？一筆訂單長什麼樣？為什麼先 LIMIT 不全撈？」 | 不看檔案列出 olist 的表並預覽其一；用 Excel 活頁簿類比口頭解釋 schema／table／row／column |
-| **ch02 filter_sort** 篩選與排序 | WHERE（=、<>、IN、BETWEEN、LIKE、AND/OR、IS NULL）、ORDER BY 多欄、DISTINCT | 「營運經理要取消訂單清單：哪些被取消？最新的 20 筆排前面」（沿用既有 canceled 練習；明教 canceled 一個 L 的拼字陷阱與 `= NULL` 抓不到空值） | 換兩次條件都能現場寫出 WHERE + ORDER BY DESC + LIMIT；說明 AND/OR 差別 |
-| **ch03 aggregate** 分組彙總 | COUNT、SUM、AVG、MIN/MAX、GROUP BY、HAVING、AS | 「每種訂單狀態各幾筆？各付款方式總金額？」— 明講：**GROUP BY（分組彙總）就是你天天用的樞紐分析表（pivot table）**（order_payments_raw 首度登場） | 解釋 WHERE vs HAVING（篩列 vs 篩組）；白紙寫出 count+group+排序 |
-| **ch04 joins** 表格串接（全課最大觀念，排 2–3 個 session） | INNER JOIN、LEFT JOIN、join key（串接鍵）、表別名、anti-join 初步 | 「orders_raw 沒有金額！錢在 order_items_raw — 老闆要『已送達訂單的總營收』，兩張表怎麼接？」（SAP 類比：用單號把採購單抬頭和明細接起來；配 [data_dictionary](reference/data_dictionary.md) 的 join 地圖） | 畫出或口述 orders↔order_items↔products 的鍵關係；解釋 INNER 和 LEFT 少了誰；白紙寫雙表 join＋彙總 |
-| **ch05 dates_delivery** 日期與交期 | ::date、DATE_TRUNC、EXTRACT、日期相減、CASE WHEN 初步 | 「出貨平均幾天？哪些訂單遲到？各州準時交貨率？」— **OTD（準時交貨率）是你履歷上的語言，SQL 只是新工具**（排在 ch06 之前：品質檢查的遲交項需要日期邏輯，且主場題放中段補血） | 用自己的話解釋 DATE_TRUNC('month',…)；算出一筆訂單 lead time（前置時間）並講解每一步；CASE WHEN 像 Excel 的 IF |
-| **ch06 data_quality** 資料品質 | IS NULL 統計、重複偵測（GROUP BY+HAVING）、孤兒紀錄（LEFT JOIN…IS NULL）、遲交筆數 | 「報表給老闆前，先問：資料能信嗎？」= 供應鏈對帳（reconciliation）的資料庫版。**教材 = 逐句拆解 [showcase/data_quality_checks.sql](reference/showcase/data_quality_checks.sql) 的 6 個查詢**（全部概念此時已教過 — 便宜的一章） | 說出「拿到新資料先檢查哪三件事」；對任一張表獨立寫出一個 NULL 檢查＋一個重複檢查 |
-| **ch07 business_analysis** 商業分析 | 多表 join＋彙總綜合、COALESCE、子查詢 → CTE（WITH，具名的中繼查詢） | 「月營收（GMV）趨勢？前 20 大品類（要接翻譯表）？各州物流表現？」**教材 = 逐句拆解 [showcase/business_analysis_showcase.sql](reference/showcase/business_analysis_showcase.sql) 的 3 條查詢**，每條拆成 3–4 個遞進步驟重建 | 拿其中一條查詢逐行講給「聽不懂 SQL 的主管」聽；解釋 COALESCE 救了什麼；把一段巢狀改寫成 CTE 並說明為何較好讀 |
-| **ch08 mini_project** 作品集小專案（資料夾屆時才建） | 綜合前七章，無新語法；結果輸出到 `03_data/output/` | 「Olist 供應鏈交付績效報告」：自選 3–5 題（建議含 1 個 OTD/交期題發揮主場優勢＋1 條資料品質附註），產出 `project.sql` ＋雙語 `PROJECT.md` ＋ `interview_qa.md` 模擬問答 | 對家教做 10 分鐘專案簡報：中文完整講一次，關鍵句英文講一次；README 連到專案 |
-
-九張表是誰、欄位是什麼意思、表和表怎麼接 — 隨時查 [reference/data_dictionary.md](reference/data_dictionary.md)。
-
----
-
-## ③ 三檔模式（每章固定結構）
-
-每個章節資料夾都是同樣三個檔，三段鷹架，順序固定：
-
-| 檔案 | 角色 | 規則 |
-|---|---|---|
-| `1_lesson.sql` | 老師示範（讀＋跑） | 每步 = 分析師的問題（繁中）→ 為什麼（寫在程式碼之前）→ SQL → 執行後看什麼 → 寫下觀察。風格完全複製 `ch01_first_look/0_first_session_zh.sql`（全 repo 教學品質最高的檔案）。≤120 行。 |
-| `2_practice.sql` | 學生寫作區 | 前 2–3 題附答案「憑記憶重打」，中段給查詢骨架挖空關鍵字，後段只給商業需求。數字/條件與 lesson 不同，無法照抄。家教**永不代填**。 |
-| `3_challenge.sql` | 白紙挑戰 | 1–2 題全新商業問題＋全新參數，只有需求與空白；答案藏檔案最底標「做完前不要偷看」；檔尾附本章理解關卡問題。通過 = 該章概念升 Independent 的**唯一**證據。 |
-
-理解關卡不另開檔案：關卡問題列在 `3_challenge.sql` 結尾，你用自己的話（中文即可）回答，家教記入 PROGRESS.md 概念表。
-
-白紙挑戰不是「第一次寫」— 你在 lesson 看過一次、在 practice 寫過一次，challenge 是**第三次**寫同型查詢，只是換了數字。
-
----
-
-## ④ 雙軌節奏（每週 3 次 SQL ＋ 1 次 pandas 鏡射）
-
-pandas 那次刻意鏡射當週 SQL 概念 — 同一個心智模型換語法再提取一次。Python 基礎順路教（list 在選欄位時、dict 在 `agg({...})` 時），不再有獨立 Python 週。pandas 側在 [../02_pandas/](../02_pandas/) 的 my_work notebook 續寫，家教永不代填。
-
-| SQL 當週 | pandas 鏡射 |
-|---|---|
-| ch02 WHERE | `df[df["Category"]==...]` 布林篩選＋sort_values |
-| ch03 GROUP BY | `groupby().agg()` 第一次分組（對照 Excel 樞紐） |
-| ch04 JOIN | `merge()` 概念對照（輕量） |
-| ch05 dates | 日期欄轉換＋月趨勢 |
-| ch06 quality | 缺值報告與清理（walkthrough 對應節） |
-| ch07 CASE | `pd.cut` 折扣分級＋第一張圖 |
-
----
-
-## ⑤ 行事曆（2026-07-07 → 2026-08-31；每週 3–5 次、每次 30–60 分）
-
-| 週 | 日期 | SQL 主線 | pandas 副線 |
-|---|---|---|---|
-| W1 | 07/07–07/12 | 新家導覽（30 分：跑一條已會的查詢驗證一切正常）；ch01 2_practice 完成；3_challenge＋關卡 | 修 notebook 路徑（= 複習你 6/05 親手修過的錯）＋第一次 groupby |
-| W2 | 07/13–07/19 | ch02 三檔＋關卡 | 布林篩選＋排序 |
-| W3 | 07/20–07/26 | ch03 三檔＋關卡 | groupby 彙總 |
-| W4 | 07/27–08/02 | ch04（3 個 SQL session）＋關卡。**★ 檢查點 A（08/02）** | merge() 輕量 |
-| W5 | 08/03–08/09 | ch05 交期主場＋關卡；**模擬面試 #1**（15 分：現場寫 SELECT/WHERE/GROUP BY 三題） | 缺值報告 |
-| W6 | 08/10–08/16 | ch06（拆解現成 showcase，便宜）＋ ch07 開始。**★ 檢查點 B（08/16）＝最低可面試關卡**：ch01–04 全 Independent＋能 live 寫三題 | 月趨勢＋日期處理 |
-| W7 | 08/17–08/23 | ch07 完成＋關卡；ch08 開工（建資料夾、選題、前 1–2 條查詢） | 暫停或併入專案（一張圖） |
-| W8 | 08/24–08/31 | ch08 完成：project.sql＋雙語 write-up＋**模擬面試 #2、#3**（含英文關鍵句）＋概念表總複習掃一輪（ch01–07 各抽一題白紙） | 併入專案 |
-
----
-
-## ⑥ 削減規則（事先寫死，屆時不用掙扎）
-
-- 檢查點 A（08/02）：落後一章 → 先砍當週 pandas 場次（永不砍 challenge/關卡）；落後兩章 → ch07 只拆解 1 條 showcase 查詢、CTE 降為選讀。
-- 檢查點 B（08/16）：未達最低可面試關卡 → ch08 縮為 2 題＋write-up；ch07 剩餘部分改為「口頭拆解並解釋 showcase 查詢」。
-- **底線（W6 就達得到）**：面試就緒的最低可行定義 = ch01–05 過關＋能逐行解釋自己作品裡的每一句 — 「能解釋」是底線，不是「能默寫全部」。
-- 每週第一個 session，家教對照行事曆調速；砍的決定由檢查點觸發，不由感覺觸發。
+每個 session（上課）固定：3 題逐題暖身 → 清白紙債 → 目前 Unit 的一題 → 執行與 review → 更新 PROGRESS.md → 由學生 commit（提交存檔點）。進度以關卡證據決定，不以坐了多久或看了幾頁決定。

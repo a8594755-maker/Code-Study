@@ -1,6 +1,6 @@
 -- 連線健檢 — 隨時可重跑，全部唯讀、無副作用。
 -- 目的：確認 VS Code（或 psql）連到的是正確的資料庫，而且 olist schema 存在。
--- 執行方式：一次一句 — 選到分號為止，按 Cmd+Shift+E。
+-- 執行方式：一次一句 — 選到分號為止，Windows 按 Ctrl+Shift+E；macOS 按 Cmd+Shift+E。
 
 -- 檢查 1：我連到哪個資料庫、用哪個帳號？
 SELECT

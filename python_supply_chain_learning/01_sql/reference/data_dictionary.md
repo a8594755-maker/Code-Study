@@ -78,7 +78,7 @@
 ### product_category_translation_raw — 品類翻譯
 
 - **商業意義**：一列 = 一個葡萄牙文品類名對應英文品類名。
-- **為什麼重要**：原始品類名是葡萄牙文，這張 lookup table（對照表）讓品類分析結果讀得懂 — 就像 Excel 裡放一張 VLOOKUP 用的對照表。注意：不是每個品類都有翻譯，所以 ch07 會教用 LEFT JOIN＋COALESCE 接它。
+- **為什麼重要**：原始品類名是葡萄牙文，這張 lookup table（對照表）讓品類分析結果讀得懂 — 就像 Excel 裡放一張 VLOOKUP 用的對照表。注意：不是每個品類都有翻譯，所以 Chapter 4 會用 LEFT JOIN＋COALESCE 接它。
 
 ### sellers_raw — 賣家
 
@@ -134,6 +134,6 @@
 
 ### 三條最常走的路
 
-1. **營收路線**（ch04/ch07）：`orders_raw` ─`order_id`→ `order_items_raw` ─`product_id`→ `products_raw` ─`product_category_name`→ `translation`。老闆問「已送達訂單的總營收、前 20 大品類」走這條。
+1. **營收路線**（Chapter 2–4）：`orders_raw` ─`order_id`→ `order_items_raw` ─`product_id`→ `products_raw` ─`product_category_name`→ `translation`。老闆問「已送達訂單的總營收、前 20 大品類」走這條。
 2. **地區路線**（ch05）：`orders_raw` ─`customer_id`→ `customers_raw`，取 `customer_state` — 各州交期、各州準時率。
 3. **滿意度/金流路線**：`orders_raw` ─`order_id`→ `order_payments_raw` 或 `order_reviews_raw` — 付款方式結構、遲交與評分的關係。
