@@ -21,4 +21,4 @@ venv/
 04_reference/
 
 # Supabase local CLI cache (contains project identifiers)
-supabase/
+/supabase/

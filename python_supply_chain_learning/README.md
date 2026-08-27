@@ -42,6 +42,7 @@ VS Code 需要三個 extension（擴充套件）：Python、Jupyter、PostgreSQL
 | [01_sql/](01_sql/README.md) | ★ 主線：五章 Entry-Level SQL Analyst 實戰課（Olist × Supabase PostgreSQL）；完整 Unit 計畫只在裡面的 README |
 | [02_pandas/](02_pandas/README.md) | 副線：pandas（Python 資料分析套件）；`my_work/` 是你的作品，AI 永不動它 |
 | [03_data/](03_data/README.md) | 資料區：`raw/` 原始資料（永不修改）、`processed/` 加工檔、`output/` 分析輸出 |
+| [tools/sql_playground/](tools/sql_playground/README.md) | 本機 SQL 練習場：瀏覽 Olist schema、逐題寫唯讀查詢並檢視結果 |
 | 04_reference/ | 私人文件（履歷等）；整夾已列入 .gitignore，絕不會出現在 GitHub |
 | [90_archive/](90_archive/README.md) | 歷史封存：舊課程、舊追蹤檔、舊筆記全在這 |
 
