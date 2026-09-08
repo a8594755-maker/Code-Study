@@ -7,6 +7,9 @@
 [build.environment]
   NODE_VERSION = "24.11.1"
 
+[context.production.environment]
+  VITE_RELEASE_CHANNEL = "production"
+
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["express"]

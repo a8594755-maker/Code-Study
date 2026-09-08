@@ -1,6 +1,6 @@
 import { PageHeading } from "./ui-components.jsx";
 import { courseAudit } from "../server/course-audit.js";
-import { releaseLabel, previewHome } from './release.js';
+import { releaseLabel, previewHome, releaseHomeLabel, releaseNotice } from './release.js';
 
 export default function Dashboard({ data, catalog, onResume, onOpenActivity, onWorkflow, onHistory }) {
   if (!data || !catalog) return <div className="surface-loading">正在整理你的學習紀錄…</div>;
@@ -10,7 +10,7 @@ export default function Dashboard({ data, catalog, onResume, onOpenActivity, onW
   const helped = Object.values(summary.activities).filter((a) => a.helped).length;
   return <main className="app-page overview-page">
     <PageHeading title="學習總覽" description="先找下一個小步驟，再回到工作室練習。" />
-    <p className="app-meta">目前版本：{releaseLabel} · <a href={previewHome}>固定預覽入口 ↗</a> · 預覽不會更新正式站</p>
+    <p className="app-meta">目前版本：{releaseLabel} · <a href={previewHome}>{releaseHomeLabel} ↗</a> · {releaseNotice}</p>
     <section className="overview-resume" aria-label="下一步學習">
       <div><span className="app-meta">CH1 · 建議練習</span><h2>{next.title}</h2><p>結果符合後，還要能解釋與完成新條件；不以執行次數代替掌握。</p></div>
       <div className="app-page-actions"><button className="primary-action" onClick={() => onOpenActivity(next.id)}>開啟這個活動 →</button><button className="secondary-action" onClick={onWorkflow}>回到目前工作區</button></div>

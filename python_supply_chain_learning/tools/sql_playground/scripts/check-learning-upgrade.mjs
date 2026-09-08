@@ -7,7 +7,8 @@ import { getIntegratedActivity } from '../server/integrated-catalog.js';
 import { readEvents } from '../src/tutor-protocol.js';
 dotenv.config({ quiet: true });
 const origin = process.argv[2];
-if (!/^https?:\/\/(127\.0\.0\.1:\d+|[a-z0-9-]+--supply-sql-lab-a8594755\.netlify\.app)$/.test(origin || '')) throw new Error('Only local or this site Preview allowed');
+const explicitlyAuthorizedProduction = process.argv.includes('--production') && origin === 'https://supply-sql-lab-a8594755.netlify.app';
+if (!/^https?:\/\/(127\.0\.0\.1:\d+|[a-z0-9-]+--supply-sql-lab-a8594755\.netlify\.app)$/.test(origin || '') && !explicitlyAuthorizedProduction) throw new Error('Only local or this site Preview allowed; live QA requires explicit --production authorization');
 const accounts = [];
 try {
   for (let i = 0; i < 2; i++) {

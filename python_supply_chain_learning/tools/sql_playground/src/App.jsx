@@ -5,7 +5,7 @@ import History from "./History.jsx";
 import { useSupabaseAuth } from "./useSupabaseAuth.js";
 import { fetchWithTimeout } from "./download.js";
 import { AccountDraftProvider } from "./AccountDraft.jsx";
-import { releaseLabel, previewHome } from "./release.js";
+import { releaseLabel, previewHome, releaseHomeLabel } from "./release.js";
 
 const Lab = lazy(() => import("./Lab.jsx"));
 const Playground = lazy(() => import("./Playground.jsx"));
@@ -280,7 +280,7 @@ export default function App() {
         <div className="account-area">
           {exporting && <span className="exporting-label">正在整理下載…</span>}
           <div className="account-pill"><span>{auth.session.user.email?.slice(0, 1).toUpperCase()}</span><div><strong>{auth.session.user.email}</strong><small>{dashboard?.readiness?.status || "Learning"}</small></div></div>
-          <a className="release-link" href={previewHome} title={`目前版本 ${releaseLabel}；開啟固定預覽入口`}>{releaseLabel}</a>
+          <a className="release-link" href={previewHome} title={`目前版本 ${releaseLabel}；開啟${releaseHomeLabel}`}>{releaseLabel}</a>
           <button className="logout-button" disabled={signingOut} onClick={signOutSafely}>{signingOut ? '保存中…' : '登出'}</button>
         </div>
       </header>

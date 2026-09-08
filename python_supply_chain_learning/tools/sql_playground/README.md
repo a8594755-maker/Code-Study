@@ -210,6 +210,8 @@ Function 才會取得新值。
 `netlify deploy --context deploy-preview`，不要加 `--prod`，也不要與 `--no-build` 混用。
 只有使用者當次明確要求更新正式網站，才允許正式發布；預覽完成後須檢查 `/api/health` 與登入權限。
 
+正式發布使用 `netlify deploy --prod --context production`，不加 alias／draft；`netlify.toml` 的 production context 設定 `VITE_RELEASE_CHANNEL=production`，使標示及入口指向正式站。新版家教沿用已驗證的 `editor-tutor-v2`，production 必須配置有效的 `EDITOR_TUTOR_PROXY_SECRET`，不可複製遮蔽值或覆寫舊代理設定。只有當次正式發布已獲授權時，才可用 `node scripts/check-learning-upgrade.mjs https://supply-sql-lab-a8594755.netlify.app --production --ai` 執行臨時帳號驗收；測畢清除，平常仍只驗收 Preview。
+
 部署後執行 `npm run check:auth -- <preview-url>`，以已部署的 `/api/config` 實際向 Supabase Auth
 驗證 public key 與 Email 登入是否啟用；只讀取設定，不建立帳號、不嘗試密碼、不寫入資料。
 `/api/config` 與 `/api/health` 會先檢查登入服務，拒絕遮蔽值、非公開 key 或已失效 key；
