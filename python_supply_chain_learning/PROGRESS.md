@@ -10,8 +10,8 @@
 - 四頁共用介面維持；SQL／pandas／BI 草稿與未送出問題新增帳號同步、離線備份及版本衝突比較。保存不執行、不送 AI；目前草稿不是逐鍵永久版本，亦非完成證據。
 - 家教驗收涵蓋最小修正／題目交付邊界、COUNT 與 LIMIT、NULL 與重複；示意或不符本站限制的 SQL 區塊明標不可執行。送出時讀取草稿／指定紀錄，仍不背景監看或自動改寫。
 - 本人仍在 Chapter 1 / Unit 1.2；產品 QA 不增加學生掌握、題數或時數；白紙債 `unit01_3_challenge.sql` 未做，既有學生檔案／紀錄未改。
-- 2026-09-07 已將產品改版 251c581 推送 GitHub main；固定 Preview：https://learning-preview--supply-sql-lab-a8594755.netlify.app/；部署 6a9f6930f7daab4ef29fa218（明確 --draft），正式站不變。
-- 本輪部署驗證：128 項測試、build、check:auth、真實帳號隔離／409 衝突、4 題 SQL、複習與草稿匯出通過，臨時 QA 帳號及紀錄已清除。未重跑 AI／pandas UI，前輪證據詳見 09-06 日誌。
+- 2026-09-07 依本人明確授權正式發布 c7cc269：https://supply-sql-lab-a8594755.netlify.app/；production 部署 6a9f6d145a5ea6fc8d974eb6，版本 2026.09.07-c7cc269。此次未建立 Preview，日後仍預設 Preview。
+- 本輪正式站驗證：130 項測試、build、Auth、帳號隔離／409 衝突、4 題 SQL、複習與草稿匯出及 3 輪真實 AI 追問通過；已閱讀家教回答，臨時 QA 帳號與紀錄均已清除。pandas UI 未重跑。
 - 本輪 Mac 鎖定，未重新操作瀏覽器；前輪桌面 1470×745 已測、手機 viewport 未生效仍待複測。未再改 Supabase 資料／權限；大型共享 bundle 警告仍待改善。
 - 下一步：本人先試第一單元；補手機複測及其餘 CH1 教學梯度，再擴充後續三工具工作情境。未宣稱完整 100h、主動式家教或 Power BI 檔案審查已完成。
 
@@ -117,6 +117,13 @@ Not Started -> Introduced -> Practiced -> Can Explain -> Independent
 | insight / assumption / limitation | 洞察／假設／限制 | Not Started | Chapter 4 Case 5 | executive summary | Separate evidence from inference |
 
 ## 學習日誌（append-only（只增不改），新條目在上，繁中模板）
+
+### 2026-09-07 — 明確授權的 Netlify 正式發布
+- 目標：依本人要求將已驗證版本發布正式站，本次不使用 Preview；不改學生掌握或完成紀錄。
+- 變更：c7cc269 加入正式版標示／入口及 production QA 明確開關；正式環境補齊新版家教代理 Secret，未顯示或提交金鑰。
+- 發布：僅執行一次 --prod --context production；部署 6a9f6d145a5ea6fc8d974eb6，正式入口 https://supply-sql-lab-a8594755.netlify.app/，遠端資產版本核對成功。
+- 驗證：130 測試與 build 通過；正式 Auth、4 題 SQL、草稿隔離／衝突、匯出與 3 輪 AI 真實追問通過；逐段讀取回答，精確清除臨時帳號及測試紀錄。
+- 待辦：本輪未重跑瀏覽器／pandas UI；手機複測、共享 bundle 與完整 100h 內容仍待改善，白紙債及本人進度不變。
 
 ### 2026-09-07 — 推送 main 並部署 Netlify Preview
 - 今天做了：依本人明確要求，將 105 個產品程式／教材／文件變更整理為 251c581 並推送 origin/main；掃描未發現金鑰，環境檔、私密文件及建置產物未提交。
