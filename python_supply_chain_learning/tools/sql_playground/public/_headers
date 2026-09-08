@@ -1,0 +1,3 @@
+/pandas-worker.mjs
+  Content-Security-Policy: default-src 'none'; script-src https://cdn.jsdelivr.net 'unsafe-eval' 'wasm-unsafe-eval'; connect-src https://cdn.jsdelivr.net; worker-src 'none'
+  X-Content-Type-Options: nosniff

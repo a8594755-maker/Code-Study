@@ -13,6 +13,7 @@ export function createSupabaseRest({ url, anonKey }) {
 
   async function request(path, { token, method = "GET", body, headers = {} } = {}) {
     const response = await fetch(`${baseUrl}${path}`, {
+      signal: AbortSignal.timeout(12000),
       method,
       headers: {
         apikey: anonKey,

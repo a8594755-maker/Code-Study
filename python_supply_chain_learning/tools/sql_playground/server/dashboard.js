@@ -1,4 +1,6 @@
-import { getChapters, getQuestions } from "./course-catalog.js";
+import { getCareerFramework, getChapters, getQuestions } from "./course-catalog.js";
+import { workflowSummary } from "./workflow-api.js";
+import { integratedSummary } from "./integrated-api.js";
 
 function dateKey(value) {
   return new Date(value).toISOString().slice(0, 10);
@@ -15,12 +17,24 @@ export function buildDashboard(progressRows = [], logs = []) {
   const chapterProgress = chapters.map((chapter) => {
     const total = chapter.questions.length;
     const complete = chapter.questions.filter((item) => completed.has(item.id)).length;
+    const completedMinutes = chapter.questions
+      .filter((item) => completed.has(item.id))
+      .reduce((sum, item) => sum + item.estimatedMinutes, 0);
     return {
       id: chapter.id,
       order: chapter.order,
       title: chapter.title,
       subtitle: chapter.subtitle,
+      timeline: chapter.timeline,
+      mission: chapter.mission,
+      deliverable: chapter.deliverable,
+      toolFlow: chapter.toolFlow,
       readinessDimension: chapter.readinessDimension,
+      learningMinutes: chapter.learningMinutes,
+      completedMinutes,
+      outcomes: chapter.outcomes,
+      tools: chapter.tools,
+      jobCapability: chapter.jobCapability,
       completed: complete,
       total,
       percent: Math.round((complete / total) * 100),
@@ -76,18 +90,28 @@ export function buildDashboard(progressRows = [], logs = []) {
   }
 
   const completedCount = questions.filter((item) => completed.has(item.id)).length;
+  const totalMinutes = questions.reduce((sum, item) => sum + item.estimatedMinutes, 0);
+  const completedMinutes = questions
+    .filter((item) => completed.has(item.id))
+    .reduce((sum, item) => sum + item.estimatedMinutes, 0);
+  const requiredEvidenceQuestions = questions.filter((item) => item.careerLab?.requiredEvidence);
+  const completedEvidence = requiredEvidenceQuestions.filter((item) => (
+    progressByQuestion.get(item.id)?.last_validation?.career_evidence?.completed
+  )).length;
   const readinessScore = Math.round((completedCount / questions.length) * 100);
   const firstAttemptSuccesses = logs.filter(
-    (log) => log.attempt_number === 1 && log.score === 100,
+    (log) => log.question_id && log.attempt_number === 1 && log.score === 100,
   ).length;
-  const firstAttempts = logs.filter((log) => log.attempt_number === 1).length;
+  const firstAttempts = logs.filter((log) => log.question_id && log.attempt_number === 1).length;
 
   return {
+    integrated: integratedSummary(logs),
+    workflow: workflowSummary(logs),
     readiness: {
       score: readinessScore,
       status:
         readinessScore === 100
-          ? "Entry-Level Ready"
+          ? "原有 SQL 題目完成"
           : readinessScore >= 75
             ? "接近工作模擬標準"
             : readinessScore >= 35
@@ -96,7 +120,14 @@ export function buildDashboard(progressRows = [], logs = []) {
       completedQuestions: completedCount,
       totalQuestions: questions.length,
       completedSimulations: chapterProgress.find((item) => item.id === "ch05")?.completed || 0,
+      completedMinutes,
+      totalMinutes,
+      completedHours: Math.round((completedMinutes / 60) * 10) / 10,
+      totalHours: totalMinutes / 60,
+      completedCareerEvidence: completedEvidence,
+      totalCareerEvidence: requiredEvidenceQuestions.length,
     },
+    careerFramework: getCareerFramework(),
     chapterProgress,
     skills,
     errorPatterns,

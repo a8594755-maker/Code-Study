@@ -1,4 +1,4 @@
-import { parse } from "pgsql-ast-parser";
+import { parseWithComments } from "pgsql-ast-parser";
 
 const mutationTypes = new Set([
   "insert",
@@ -163,11 +163,19 @@ export function validateReadOnlySql(
     throw new QueryPolicyError("請先寫一段 SQL，再按 Run Query。");
   }
 
-  let statements;
+  let statements, comments;
   try {
-    statements = parse(sql);
+    ({ ast: statements, comments } = parseWithComments(sql));
   } catch (error) {
-    throw new QueryPolicyError(`SQL 無法解析：${error.message}`);
+    const location = String(error.message || "").match(/line\s+(\d+)\s+col\s+(\d+)/i);
+    const unexpected = String(error.message || "").match(/Unexpected\s+[^\s]+\s+token:\s+"([^"]+)"/i);
+    const locationText = location
+      ? `（第 ${location[1]} 行、第 ${location[2]} 個字元附近）`
+      : "";
+    const tokenText = unexpected ? `，在「${unexpected[1]}」前後無法接續` : "";
+    throw new QueryPolicyError(
+      `SQL 語法無法解析${locationText}${tokenText}。請檢查函數括號中是否有 *、欄位或 DISTINCT 欄位，以及逗號與右括號是否完整。`,
+    );
   }
 
   if (statements.length !== 1) {
@@ -214,5 +222,12 @@ export function validateReadOnlySql(
     );
   }
 
-  return sql.replace(/;\s*$/, "");
+  // Preserve the learner's raw SQL in logs, but do not send comments to the
+  // legacy RPC's text-based guard. Use lexer locations, never a comment regex
+  // that could corrupt quoted strings or conceal a second statement.
+  let executable = sql;
+  for (const { _location: { start, end } } of [...comments].sort((a, b) => b._location.start - a._location.start)) {
+    executable = executable.slice(0, start) + executable.slice(start, end).replace(/[^\r\n]/g, " ") + executable.slice(end);
+  }
+  return executable.trim().replace(/;\s*$/, "");
 }

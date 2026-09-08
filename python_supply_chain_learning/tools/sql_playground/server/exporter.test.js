@@ -43,6 +43,20 @@ const fixture = {
       payload: { source: "dashboard" },
     },
   ],
+  tutorMessages: [
+    {
+      created_at: "2026-08-27T17:01:00.000Z",
+      chapter_id: "ch01",
+      question_id: "ch01-q01",
+      role: "assistant",
+      mode: "draft",
+      content: "這份結果確認了訂單資料量。",
+      model: "gpt-5.6-luna",
+      input_tokens: 120,
+      output_tokens: 80,
+      metadata: { provider: "openai" },
+    },
+  ],
   dashboard: { readiness: { score: 3 } },
 };
 
@@ -72,7 +86,7 @@ test("CSV export includes the timestamp, question, SQL, and outcome", () => {
   assert.match(response.body, /succeeded/);
 });
 
-test("JSON export includes dashboard, progress, events, and attempts", () => {
+test("JSON export includes dashboard, progress, events, tutor messages, and attempts", () => {
   const response = responseDouble();
   sendLearningExport(response, { ...fixture, format: "json" });
   const data = JSON.parse(response.body);
@@ -80,7 +94,20 @@ test("JSON export includes dashboard, progress, events, and attempts", () => {
   assert.equal(data.dashboard.readiness.score, 3);
   assert.equal(data.progress.length, 1);
   assert.equal(data.events[0].event_type, "question_opened");
+  assert.equal(data.tutorMessages[0].mode, "draft");
   assert.equal(data.attempts[0].question_id, "ch01-q01");
+});
+
+test("CSV exposes Playground tags/notes and safely quotes spreadsheet formulas", () => {
+  const response = responseDouble();
+  sendLearningExport(response, { ...fixture, format: "csv", logs: [{
+    sql_text: "=1+1", score: null, validation: { mode: "playground", tags: ["SELECT", "JOIN"], note: "對帳通過" },
+  }] });
+  assert.match(response.body, /analyst_note/);
+  assert.match(response.body, /playground/);
+  assert.match(response.body, /SELECT \| JOIN/);
+  assert.match(response.body, /對帳通過/);
+  assert.match(response.body, /'=1\+1/);
 });
 
 test("ZIP export contains reports and a separate SQL file for every attempt", async () => {
@@ -104,6 +131,28 @@ test("ZIP export contains reports and a separate SQL file for every attempt", as
   assert.match(directoryText, /attempts\.csv/);
   assert.match(directoryText, /progress\.csv/);
   assert.match(directoryText, /learning_events\.csv/);
+  assert.match(directoryText, /tutor_conversations\.csv/);
   assert.match(directoryText, /learning_report\.json/);
   assert.match(directoryText, /queries\/ch01_ch01-q01_attempt-1_/);
+});
+
+test("workflow export preserves Python output, evidence and .py extension", async () => {
+  const log = { ...fixture.logs[0], id: "qa-python", question_id: null, score: null, sql_text: "result = df.head()", result_preview: [{ value: 1 }], validation: { mode: "workflow_pandas", language: "python", missionId: "day1-map", studyMode: "reference", stdout: "example output", executionEvidence: "browser_reported" } };
+  const csv = responseDouble(); sendLearningExport(csv, { ...fixture, logs: [log], format: "csv" });
+  assert.match(csv.body, /example output/); assert.match(csv.body, /python/); assert.match(csv.body, /browser_reported/);
+  const response = new PassThrough(); response.setHeader = () => {}; const chunks = [];
+  response.on("data", (chunk) => chunks.push(chunk)); const ended = new Promise((r, reject) => { response.on("end", r); response.on("error", reject); });
+  sendLearningExport(response, { ...fixture, logs: [log], format: "zip" }); await ended;
+  const zip = Buffer.concat(chunks).toString("latin1"); assert.match(zip, /qa-python\.py/); assert.match(zip, /workflow-evidence\//);
+});
+
+test("Power BI self-reported evidence exports as Markdown, never executable SQL or fake pbix", async () => {
+  const log = { ...fixture.logs[0], id: "qa-bi", sql_text: "QA report note, pending external review", validation: { mode: "workflow_powerbi", language: "powerbi", fileUploaded: false, reviewStatus: "pending" } };
+  const response = new PassThrough(); response.setHeader = () => {}; const chunks = [];
+  response.on("data", (chunk) => chunks.push(chunk));
+  const ended = new Promise((resolve, reject) => { response.on("end", resolve); response.on("error", reject); });
+  sendLearningExport(response, { ...fixture, logs: [log], format: "zip" }); await ended;
+  const directory = Buffer.concat(chunks).toString("latin1");
+  assert.match(directory, /qa-bi\.md/); assert.doesNotMatch(directory, /qa-bi\.sql|qa-bi\.pbix/);
+  assert.match(directory, /workflow-evidence\//);
 });

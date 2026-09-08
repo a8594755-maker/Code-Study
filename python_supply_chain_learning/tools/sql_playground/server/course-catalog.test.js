@@ -11,6 +11,59 @@ test("contains five sequential chapters and thirty graded questions", () => {
   assert.ok(chapters.every((chapter) => chapter.questions.length === 6));
 });
 
+test("the five chapters form a complete analyst onboarding journey", () => {
+  for (const chapter of getChapters()) {
+    assert.ok(chapter.timeline, chapter.id);
+    assert.ok(chapter.mission, chapter.id);
+    assert.ok(chapter.deliverable, chapter.id);
+    assert.ok(chapter.toolFlow, chapter.id);
+    assert.ok(chapter.learningMinutes, chapter.id);
+    assert.ok(chapter.outcomes.length >= 4, chapter.id);
+    assert.ok(chapter.tools.length >= 3, chapter.id);
+    assert.ok(chapter.jobCapability, chapter.id);
+  }
+});
+
+test("the curriculum is exactly fifty planned hours with a complete unit plan", () => {
+  const chapters = getChapters();
+  assert.deepEqual(chapters.map((chapter) => chapter.learningMinutes), [480, 600, 660, 600, 660]);
+  assert.equal(getQuestions().reduce((sum, item) => sum + item.estimatedMinutes, 0), 3000);
+  for (const item of getQuestions()) {
+    assert.ok(item.estimatedMinutes >= 60, item.id);
+    assert.equal(
+      item.practicePlan.reduce((sum, step) => sum + step.minutes, 0),
+      item.estimatedMinutes,
+      item.id,
+    );
+  }
+});
+
+test("question 1.2 teaches row versus entity grain instead of repeating question 1.1", () => {
+  const [first, second] = getChapters()[0].questions;
+  assert.notEqual(first.title, second.title);
+  assert.match(second.referenceSql, /COUNT\(DISTINCT order_id\)/i);
+  assert.match(second.referenceSql, /duplicate_review_rows/i);
+  assert.match(second.workContext.businessPurpose, /粒度/);
+  assert.equal(second.expected, "1 列、3 欄；reviewed_order_count <= review_row_count，差額欄位計算正確。");
+});
+
+test("seven milestone questions require cross-tool career evidence", () => {
+  const labs = getQuestions().filter((item) => item.careerLab?.requiredEvidence);
+  assert.equal(labs.length, 7);
+  assert.deepEqual([...new Set(labs.map((item) => item.careerLab.tool))], [
+    "Excel",
+    "Power Query",
+    "Power BI + DAX",
+    "Pandas",
+    "Portfolio Case",
+  ]);
+  for (const item of labs) {
+    assert.ok(item.careerLab.steps.length >= 4, item.id);
+    assert.ok(item.careerLab.evidenceChecks.length >= 3, item.id);
+    assert.ok(item.careerLab.evidencePrompt.length >= 20, item.id);
+  }
+});
+
 test("never exposes reference SQL in the public question payload", () => {
   const item = getQuestions()[0];
   assert.ok(item.referenceSql);
@@ -24,6 +77,29 @@ test("every question has an analyst workflow, hints, and a hidden reference quer
     assert.ok(item.analystSteps.length >= 5, item.id);
     assert.ok(item.hints.length >= 3, item.id);
     assert.match(item.referenceSql, /^(SELECT|WITH)/, item.id);
+    assert.ok(item.workContext?.businessPurpose, item.id);
+    assert.ok(item.workContext?.whySql, item.id);
+    assert.ok(item.workContext?.delivery?.destination, item.id);
+    assert.ok(item.workContext?.toolBoundary?.length >= 4, item.id);
+  }
+});
+
+test("Chapter 1 is a six-task first-week simulation with specific validation and handoff", () => {
+  const questions = getChapters()[0].questions;
+  assert.match(questions[0].workContext.workday, /DAY 1/);
+  assert.match(questions.at(-1).workContext.workday, /DAY 5/);
+
+  for (const item of questions) {
+    assert.ok(item.workContext.team, item.id);
+    assert.ok(item.workContext.validationPlan.length >= 3, item.id);
+    assert.ok(item.workContext.delivery.label, item.id);
+    assert.ok(item.workContext.delivery.reason, item.id);
+    assert.deepEqual(
+      item.workContext.toolBoundary.map(({ tool }) => tool),
+      ["SQL", "Pandas", "Power BI", "Database View"],
+      item.id,
+    );
+    assert.ok(publicQuestion(item).workContext?.whySql, item.id);
   }
 });
 

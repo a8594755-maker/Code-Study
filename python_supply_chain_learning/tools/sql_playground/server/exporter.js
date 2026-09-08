@@ -2,7 +2,8 @@ import { ZipArchive } from "archiver";
 
 function csvCell(value) {
   if (value === null || value === undefined) return "";
-  const text = typeof value === "object" ? JSON.stringify(value) : String(value);
+  let text = typeof value === "object" ? JSON.stringify(value) : String(value);
+  if (typeof value === "string" && /^[\s]*[=+\-@\t\r]/.test(value)) text = `'${text}`;
   return `"${text.replaceAll('"', '""')}"`;
 }
 
@@ -15,6 +16,15 @@ function toCsv(rows, columns) {
 
 const attemptColumns = [
   { key: "created_at", label: "timestamp_utc" },
+  { key: "execution_mode", label: "source" },
+  { key: "language", label: "language" },
+  { key: "mission", label: "mission_id" },
+  { key: "study_mode", label: "study_mode" },
+  { key: "stdout", label: "stdout" },
+  { key: "result_preview", label: "result_preview" },
+  { key: "sql_tags", label: "sql_tags" },
+  { key: "analyst_note", label: "analyst_note" },
+  { key: "observation", label: "system_observation" },
   { key: "chapter_id", label: "chapter" },
   { key: "unit_id", label: "unit" },
   { key: "question_id", label: "question_id" },
@@ -41,6 +51,7 @@ const progressColumns = [
   { key: "best_score", label: "best_score" },
   { key: "highest_hint_level", label: "highest_hint_level" },
   { key: "reflection", label: "analyst_reflection" },
+  { key: "reflection_source", label: "analyst_reflection_source" },
   { key: "updated_at", label: "updated_at_utc" },
   { key: "completed_at", label: "completed_at_utc" },
 ];
@@ -53,6 +64,19 @@ const eventColumns = [
   { key: "payload", label: "details" },
 ];
 
+const tutorColumns = [
+  { key: "created_at", label: "timestamp_utc" },
+  { key: "chapter_id", label: "chapter" },
+  { key: "question_id", label: "question_id" },
+  { key: "role", label: "role" },
+  { key: "mode", label: "mode" },
+  { key: "content", label: "content" },
+  { key: "model", label: "model" },
+  { key: "input_tokens", label: "input_tokens" },
+  { key: "output_tokens", label: "output_tokens" },
+  { key: "metadata", label: "details" },
+];
+
 function safeFilename(value) {
   return String(value || "query")
     .replace(/[^a-zA-Z0-9_-]+/g, "-")
@@ -60,12 +84,32 @@ function safeFilename(value) {
     .slice(0, 90) || "query";
 }
 
-export function sendLearningExport(response, { format, scope, logs, progress, events, dashboard }) {
+export function sendLearningExport(response, {
+  format,
+  scope,
+  logs,
+  progress,
+  events,
+  tutorMessages = [],
+  drafts = [],
+  dashboard,
+}) {
   const date = new Date().toISOString().slice(0, 10);
   const baseName = `supply-sql-learning-log_${scope}_${date}`;
-  const attemptsCsv = toCsv(logs, attemptColumns);
+  const attemptsCsv = toCsv(logs.map((log) => ({
+    ...log,
+    execution_mode: log.validation?.mode || "lesson",
+    language: log.validation?.language || "sql",
+    mission: log.validation?.missionId || "",
+    study_mode: log.validation?.studyMode || "",
+    stdout: log.validation?.stdout || "",
+    sql_tags: (log.validation?.tags || []).join(" | "),
+    analyst_note: log.validation?.note || "",
+    observation: log.validation?.observation || "",
+  })), attemptColumns);
   const progressCsv = toCsv(progress, progressColumns);
   const eventsCsv = toCsv(events, eventColumns);
+  const tutorCsv = toCsv(tutorMessages, tutorColumns);
 
   if (format === "csv") {
     response.setHeader("Content-Type", "text/csv; charset=utf-8");
@@ -84,6 +128,8 @@ export function sendLearningExport(response, { format, scope, logs, progress, ev
           dashboard,
           progress,
           events,
+          tutorMessages,
+          drafts,
           attempts: logs,
         },
         null,
@@ -101,9 +147,18 @@ export function sendLearningExport(response, { format, scope, logs, progress, ev
   archive.append(`\uFEFF${attemptsCsv}`, { name: "attempts.csv" });
   archive.append(`\uFEFF${progressCsv}`, { name: "progress.csv" });
   archive.append(`\uFEFF${eventsCsv}`, { name: "learning_events.csv" });
+  archive.append(`\uFEFF${tutorCsv}`, { name: "tutor_conversations.csv" });
   archive.append(
     JSON.stringify(
-      { exportedAt: new Date().toISOString(), scope, dashboard, progress, events },
+      {
+        exportedAt: new Date().toISOString(),
+        scope,
+        dashboard,
+        progress,
+        events,
+        tutorMessages,
+        drafts,
+      },
       null,
       2,
     ),
@@ -117,6 +172,7 @@ export function sendLearningExport(response, { format, scope, logs, progress, ev
       safeFilename(log.question_id),
       `attempt-${log.attempt_number || 1}`,
       safeFilename(timestamp),
+      safeFilename(log.id),
     ].join("_");
     const header = [
       `-- Question: ${log.question_title || log.question_id || "Unassigned"}`,
@@ -126,9 +182,11 @@ export function sendLearningExport(response, { format, scope, logs, progress, ev
       `-- Score: ${log.score ?? ""}`,
       log.error_message ? `-- Error: ${String(log.error_message).replaceAll("\n", " ")}` : null,
     ].filter(Boolean).join("\n");
-    archive.append(`${header}\n\n${log.sql_text || ""}\n`, {
-      name: `queries/${filename}.sql`,
+    const language = log.validation?.language;
+    archive.append(`${language === "python" ? header.replaceAll("--", "#") : header}\n\n${log.sql_text || ""}\n`, {
+      name: `queries/${filename}.${language === "python" ? "py" : ["markdown", "powerbi"].includes(language) ? "md" : "sql"}`,
     });
+    if (log.validation?.mode?.startsWith("workflow_")) archive.append(JSON.stringify(log, null, 2), { name: `workflow-evidence/${filename}.json` });
   }
 
   archive.finalize();

@@ -8,3 +8,11 @@ export function classifyQuestionMastery(progress) {
   );
   return completionHintLevel <= 1 ? "independent" : "guided";
 }
+
+export function preservePassedProgressStatus(previousStatus, bestScore, requestedStatus) {
+  if (previousStatus === "completed") return "completed";
+  if (previousStatus === "query_passed" || Number(bestScore || 0) >= 100) {
+    return "query_passed";
+  }
+  return requestedStatus;
+}

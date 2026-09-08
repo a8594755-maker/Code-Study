@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { classifyQuestionMastery } from "./mastery.js";
+import { classifyQuestionMastery, preservePassedProgressStatus } from "./mastery.js";
 
 test("classifies untouched and active questions", () => {
   assert.equal(classifyQuestionMastery(null), "not_started");
@@ -34,5 +34,20 @@ test("viewing a solution after independent completion does not erase mastery evi
       last_validation: { completion_hint_level: 0 },
     }),
     "independent",
+  );
+});
+
+test("a later failed practice run does not erase an earlier passing result", () => {
+  assert.equal(
+    preservePassedProgressStatus("in_progress", 100, "in_progress"),
+    "query_passed",
+  );
+  assert.equal(
+    preservePassedProgressStatus("query_passed", 100, "in_progress"),
+    "query_passed",
+  );
+  assert.equal(
+    preservePassedProgressStatus("completed", 100, "in_progress"),
+    "completed",
   );
 });

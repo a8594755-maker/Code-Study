@@ -57,51 +57,55 @@ export const chapterOneTeaching = {
 
   "ch01-q02": {
     lesson: {
-      concept: "把已學格式轉移到另一張資料表",
+      concept: "分清資料列、商業實體與重複風險",
       plainLanguage:
-        "分析師不會為每張表重新發明 SQL。你要辨認哪些部分是固定結構，哪些部分必須依商業問題更換。這就是 transfer（能力轉移）。",
+        "COUNT(*) 數的是資料列，COUNT(DISTINCT order_id) 數的是不同訂單。當兩者不同時，代表一張訂單可能對應多筆評論；這是需要理解的資料粒度，不一定等於資料錯誤。",
       analogy:
-        "就像同一份 Excel 樞紐分析表模板，昨天連賣家主檔，今天改連評論明細；計算方法相同，但資料來源與輸出名稱必須跟著換。",
+        "Excel 裡可能有 100 列客服紀錄，但只有 92 個不同訂單編號。主管若問『多少訂單有紀錄』，不能直接回答 100。",
       terms: [
-        { term: "query pattern", meaning: "可以重複使用的查詢形狀。", here: "SELECT COUNT(*) AS ... FROM ..." },
-        { term: "table name", meaning: "真正決定你在數哪一份資料。", here: "這題是 order_reviews_raw。" },
-        { term: "alias", meaning: "讓輸出欄名符合交付需求。", here: "這題要使用 review_row_count。" },
+        { term: "COUNT(*)", meaning: "計算全部資料列。", here: "評論表目前共有多少筆紀錄。" },
+        { term: "DISTINCT", meaning: "去除重複後再計算不同值。", here: "計算多少個不同的 order_id。" },
+        { term: "grain", meaning: "一列資料實際代表的單位。", here: "確認一列是評論紀錄，未必等於一張訂單。" },
+        { term: "reconciliation", meaning: "把兩種計算對起來並解釋差異。", here: "總列數減不同訂單數。" },
       ],
       thoughtProcess: [
-        "圈出和上一題相同的動作：仍然要計算全部資料列。",
-        "圈出不同參數：資料表改成評論表，欄位別名改成評論列數。",
-        "完成後先看欄名，再看數值；不要只看到一個數字就當作正確。",
+        "先問主管要的是資料列數，還是被評論的不同訂單數。",
+        "在同一個 SELECT 同時計算 COUNT(*) 與 COUNT(DISTINCT order_id)。",
+        "用兩者相減得到要進一步調查的粒度差額。",
+        "驗證不同訂單數不會大於總列數，並避免把差額直接宣稱成髒資料。",
       ],
       workedExample: {
-        title: "相近示範：計算付款紀錄量",
-        context: "沿用 COUNT 格式，但換成付款表與新的交付欄名。",
-        sql: "SELECT COUNT(*) AS payment_row_count\nFROM olist.order_payments_raw;",
+        title: "相近示範：付款列數與付款訂單數",
+        context: "付款表也可能一張訂單分多次付款，適合用另一張表練習資料粒度。",
+        sql: "SELECT\n  COUNT(*) AS payment_row_count,\n  COUNT(DISTINCT order_id) AS paid_order_count\nFROM olist.order_payments_raw;",
         lineByLine: [
-          { code: "COUNT(*)", explanation: "計算付款表全部資料列，方法沒有改變。" },
-          { code: "AS payment_row_count", explanation: "別名改成付款紀錄的意思。" },
-          { code: "FROM olist.order_payments_raw;", explanation: "資料來源改成付款表。" },
+          { code: "COUNT(*) AS payment_row_count", explanation: "計算付款紀錄總列數。" },
+          { code: "COUNT(DISTINCT order_id) AS paid_order_count", explanation: "去除重複訂單編號後，計算有付款的不同訂單。" },
+          { code: "FROM olist.order_payments_raw;", explanation: "兩種計算都來自同一份付款資料，才能合理比較。" },
         ],
-        resultShape: "1 列、1 欄；欄名清楚指出這是付款紀錄列數。",
+        resultShape: "1 列、2 欄；paid_order_count 應小於或等於 payment_row_count。",
       },
       commonMistakes: [
-        "只換表名，忘記換輸出別名。",
-        "複製上一題後仍然數 sellers_raw。",
-        "把 reviews 拼成 review，造成找不到資料表。",
+        "把 COUNT(*) 當成不同訂單數，忽略一對多資料粒度。",
+        "把 DISTINCT 放在 SELECT 最前面，卻沒有放進 COUNT(DISTINCT order_id)。",
+        "看到差額就直接說資料重複錯誤，沒有先確認業務規則是否允許多筆評論。",
       ],
     },
     solution: {
       lineByLine: [
-        { code: "SELECT COUNT(*)", explanation: "計算評論表中的全部資料列。" },
-        { code: "AS review_row_count", explanation: "依交付規格命名結果。" },
-        { code: "FROM olist.order_reviews_raw;", explanation: "指定 Olist 的評論原始表。" },
+        { code: "COUNT(*) AS review_row_count", explanation: "計算全部評論資料列。" },
+        { code: "COUNT(DISTINCT order_id) AS reviewed_order_count", explanation: "計算被評論的不同訂單數。" },
+        { code: "COUNT(*) - COUNT(DISTINCT order_id) AS duplicate_review_rows", explanation: "顯示資料列與訂單粒度之間的差額。" },
+        { code: "FROM olist.order_reviews_raw;", explanation: "三個指標都來自同一份評論表。" },
       ],
       whyItWorks: [
-        "查詢形狀與上一題相同，但資料來源已正確替換。",
-        "輸出名稱 review_row_count 讓主管不需打開 SQL 也知道數字代表什麼。",
+        "兩種 COUNT 在相同資料範圍內運算，所以可以直接比較。",
+        "DISTINCT 只對 order_id 去重，不會修改原始資料。",
+        "差額是調查線索；是否屬於重複錯誤仍需查業務規則與 review_id。",
       ],
-      verify: ["結果應為 1 列、1 欄。", "欄名是 review_row_count。", "數值應大於 0。"],
+      verify: ["結果應為 1 列、3 欄。", "reviewed_order_count 不得大於 review_row_count。", "duplicate_review_rows 必須等於前兩欄相減。"],
       transfer:
-        "關閉答案後，請用自己的話說明：這一題和上一題哪兩個地方改變、哪一個計算方法沒有改變。",
+        "請用自己的話回答：為什麼資料列數不能自動當成訂單數？能說清楚 grain 與 DISTINCT，就真正掌握了這題。",
     },
   },
 

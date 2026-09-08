@@ -1,4 +1,10 @@
 node_modules/
 dist/
+
+# Local environment files (never commit secrets)
 .env
+.env.*
+!.env.example
+
 npm-debug.log*
+supabase/.temp/

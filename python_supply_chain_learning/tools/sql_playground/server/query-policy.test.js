@@ -9,6 +9,15 @@ test("allows one SELECT statement", () => {
   );
 });
 
+test("execution normalization removes real comments, preserves literals and still rejects stacked SQL", () => {
+  assert.equal(validateReadOnlySql("SELECT 1; -- 我的新備註"), "SELECT 1");
+  assert.equal(validateReadOnlySql("-- 準備盤點\nSELECT 1; /* update is only a note */"), "SELECT 1");
+  assert.equal(validateReadOnlySql("SELECT '-- not a comment /* either */' AS note; -- 真註解"), "SELECT '-- not a comment /* either */' AS note");
+  assert.match(validateReadOnlySql("SELECT/* note */1;"), /^SELECT\s+1$/);
+  assert.throws(() => validateReadOnlySql("SELECT 1; -- 註解\nSELECT 2;"), /一次只能/);
+  assert.throws(() => validateReadOnlySql("SELECT 1; /* no-op */ DELETE FROM olist.orders_raw;"), /一次只能/);
+});
+
 test("allows a WITH query that ends in SELECT", () => {
   const sql = "WITH recent AS (SELECT * FROM olist.orders_raw LIMIT 5) SELECT * FROM recent;";
   assert.equal(validateReadOnlySql(sql), sql.slice(0, -1));
@@ -73,4 +82,16 @@ test("blocks PostgreSQL functions with server side effects", () => {
 
 test("blocks blank input", () => {
   assert.throws(() => validateReadOnlySql("   "), /請先寫一段 SQL/);
+});
+
+test("turns parser internals into a short beginner-friendly syntax message", () => {
+  assert.throws(
+    () => validateReadOnlySql("SELECT COUNT( FROM olist.order_reviews_raw;"),
+    (error) => {
+      assert.match(error.message, /第 1 行/);
+      assert.match(error.message, /函數括號/);
+      assert.doesNotMatch(error.message, /expecting to see one of the following/);
+      return true;
+    },
+  );
 });
