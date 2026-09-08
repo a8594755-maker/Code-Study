@@ -10,9 +10,9 @@
 - 四頁共用介面維持；SQL／pandas／BI 草稿與未送出問題新增帳號同步、離線備份及版本衝突比較。保存不執行、不送 AI；目前草稿不是逐鍵永久版本，亦非完成證據。
 - 家教驗收涵蓋最小修正／題目交付邊界、COUNT 與 LIMIT、NULL 與重複；示意或不符本站限制的 SQL 區塊明標不可執行。送出時讀取草稿／指定紀錄，仍不背景監看或自動改寫。
 - 本人仍在 Chapter 1 / Unit 1.2；產品 QA 不增加學生掌握、題數或時數；白紙債 `unit01_3_challenge.sql` 未做，既有學生檔案／紀錄未改。
-- 固定 Preview：https://learning-preview--supply-sql-lab-a8594755.netlify.app/；最終部署 6a9d1b7fc78652a2f4b25011。首次 alias 部署讀錯 context，明確 --draft 後補發驗收；正式站不變。
-- 驗證：128 項測試、build、check:auth、真實帳號隔離／409 衝突、新增 4 題 SQL、複習與草稿匯出通過；Preview UI 登入、最新草稿還原／家教辨識、SQL、真實快照 pandas（20×3）、ZIP 下載及解壓通過。
-- 本輪桌面 1470×745 已視覺驗收；手機 viewport 控制未生效，不能沿用前輪結果宣稱本輪已測。新增草稿表／RLS／RPC，未改 Olist 或既有執行權限；大型共享 bundle 警告仍待改善。
+- 2026-09-07 已將產品改版 251c581 推送 GitHub main；固定 Preview：https://learning-preview--supply-sql-lab-a8594755.netlify.app/；部署 6a9f6930f7daab4ef29fa218（明確 --draft），正式站不變。
+- 本輪部署驗證：128 項測試、build、check:auth、真實帳號隔離／409 衝突、4 題 SQL、複習與草稿匯出通過，臨時 QA 帳號及紀錄已清除。未重跑 AI／pandas UI，前輪證據詳見 09-06 日誌。
+- 本輪 Mac 鎖定，未重新操作瀏覽器；前輪桌面 1470×745 已測、手機 viewport 未生效仍待複測。未再改 Supabase 資料／權限；大型共享 bundle 警告仍待改善。
 - 下一步：本人先試第一單元；補手機複測及其餘 CH1 教學梯度，再擴充後續三工具工作情境。未宣稱完整 100h、主動式家教或 Power BI 檔案審查已完成。
 
 ## 概念表（五級量尺；原 40 列完整保留，2026-08-25 起新增五章 SQL 追蹤列；Next Check 欄 = 暖身題庫 + 正式詞彙表）
@@ -117,6 +117,13 @@ Not Started -> Introduced -> Practiced -> Can Explain -> Independent
 | insight / assumption / limitation | 洞察／假設／限制 | Not Started | Chapter 4 Case 5 | executive summary | Separate evidence from inference |
 
 ## 學習日誌（append-only（只增不改），新條目在上，繁中模板）
+
+### 2026-09-07 — 推送 main 並部署 Netlify Preview
+- 今天做了：依本人明確要求，將 105 個產品程式／教材／文件變更整理為 251c581 並推送 origin/main；掃描未發現金鑰，環境檔、私密文件及建置產物未提交。
+- 商業情境：把已驗證的改版保存到 GitHub，將同一份應用程式发布為非正式預覽；Netlify 未連接 Git 自動部署，沒有觸發或執行正式發布。
+- 我現在會：本次是版本維護，不增加學生能力。128 項測試、建置與部署後 Auth、四題真實 SQL、草稿／衝突／RLS／複習／匯出驗證通過；測試帳號與紀錄已清除。
+- 還不懂：Mac 鎖定使本輪瀏覽器畫面複測未執行；未將前輪 AI／pandas 實測冒充本輪結果。手機與大型 bundle、未完成課程內容仍列待辦。
+- 下次：開啟固定 Preview，版次 2026.09.07-251c581；不可變網址 https://6a9f6930f7daab4ef29fa218--supply-sql-lab-a8594755.netlify.app/ 。本人 Unit 1.2 與白紙債保持。
 
 ### 2026-09-06 — 帳號草稿、第一單元補強與家教驗收
 - 今天做了：新增按帳號保存草稿與未送出問題、衝突比較／備份；第一單元補計數、修錯、變形與 pandas 交接說明及三個複習題；版本提示與固定 Preview 入口更新，AGENTS.md 記錄部署 context 陷阱。
